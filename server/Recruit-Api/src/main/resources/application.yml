@@ -66,7 +66,7 @@ mail:
   destination:
     url: ${MAIL_DESTINATION_URL:http://localhost:8080}
 econovation:
-  year: ${ECONOVATION_YEAR:27}
+  year: ${ECONOVATION_YEAR:28}
   recruit:
     period:
       start: ${RECRUIT_PERIOD_START:2024-03-04T00:00:00}
