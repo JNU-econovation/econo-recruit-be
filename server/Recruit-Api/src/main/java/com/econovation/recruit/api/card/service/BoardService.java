@@ -25,6 +25,9 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -104,11 +107,16 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "boardsByColumnsIds", allEntries = true),
+            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    })
     public void execute(Board board) {
         boardRecordPort.save(board);
     }
 
     @Override
+    @CacheEvict(value = "boardsByColumnsIds", allEntries = true)
     public Board createWorkBoard(Integer columnId, Long cardId) {
         Columns column = columnLoadPort.findById(columnId);
         List<Board> boardByNavigationIdAndColumnId =
@@ -160,6 +168,10 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }*/
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = "boardsByColumnsIds", allEntries = true),
+            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    })
     public void createApplicantBoard(String applicantId, String hopeField, Long cardId) {
         //        \"hopeField\" -> hopeField 로 변경
         hopeField = hopeField;
@@ -243,6 +255,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
+    @Cacheable(value = "boardsByColumnsIds")
     public List<Board> getBoardByColumnsIds(List<Integer> columnsIds) {
         return boardLoadPort.getBoardByColumnsIds(columnsIds);
     }
@@ -275,6 +288,10 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
             paramClassType = UpdateLocationBoardDto.class,
             leaseTime = 500,
             waitTime = 500)
+    @Caching(evict = {
+            @CacheEvict(value = "boardsByColumnsIds", allEntries = true),
+            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    })
     public void relocateCard(UpdateLocationBoardDto updateLocationBoardDto) {
         List<Integer> invisibleBoard = List.of(1, 2, 3);
         // 기준 보드는 이동이 불가하다.
@@ -336,6 +353,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
+    @CacheEvict(value = "boardsByColumnsIds", allEntries = true)
     public void delete(Board board) {
         boardRecordPort.delete(board);
     }
