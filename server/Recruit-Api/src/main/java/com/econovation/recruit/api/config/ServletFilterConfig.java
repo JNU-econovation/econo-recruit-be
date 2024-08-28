@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.filter.ForwardedHeaderFilter;
+import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 
@@ -23,18 +24,18 @@ public class ServletFilterConfig implements WebMvcConfigurer {
     @Bean
     public FilterRegistrationBean securityFilterChain(
             @Qualifier(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)
-                    Filter securityFilter) {
-        FilterRegistrationBean registration = new FilterRegistrationBean(securityFilter);
-        registration.setOrder(Integer.MAX_VALUE - 3);
-        registration.setName(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME);
-        return registration;
+            Filter securityFilter) {
+        FilterRegistrationBean registrationBean = new FilterRegistrationBean(securityFilter);
+        registrationBean.setOrder(Integer.MAX_VALUE - 5);
+        registrationBean.setName(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME);
+        return registrationBean;
     }
 
     @Bean
     public FilterRegistrationBean setResourceUrlEncodingFilter() {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(new ResourceUrlEncodingFilter());
-        registrationBean.setOrder(Integer.MAX_VALUE - 2);
+        registrationBean.setOrder(Integer.MAX_VALUE - 4);
         return registrationBean;
     }
 
@@ -42,7 +43,7 @@ public class ServletFilterConfig implements WebMvcConfigurer {
     public FilterRegistrationBean setForwardedHeaderFilterOrder() {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(forwardedHeaderFilter);
-        registrationBean.setOrder(Integer.MAX_VALUE - 1);
+        registrationBean.setOrder(Integer.MAX_VALUE - 3);
         return registrationBean;
     }
 
@@ -50,7 +51,16 @@ public class ServletFilterConfig implements WebMvcConfigurer {
     public FilterRegistrationBean setHttpContentCacheFilterOrder() {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(httpContentCacheFilter);
-        registrationBean.setOrder(Integer.MAX_VALUE);
+        registrationBean.setOrder(Integer.MAX_VALUE - 2);
+        return registrationBean;
+    }
+
+    @Bean
+    public FilterRegistrationBean<ShallowEtagHeaderFilter> shallowEtagHeaderFilter() {
+        FilterRegistrationBean<ShallowEtagHeaderFilter> registrationBean
+                = new FilterRegistrationBean<>(new ShallowEtagHeaderFilter());
+        registrationBean.setOrder(Integer.MAX_VALUE - 1);
+        registrationBean.addUrlPatterns("/*");
         return registrationBean;
     }
 }
