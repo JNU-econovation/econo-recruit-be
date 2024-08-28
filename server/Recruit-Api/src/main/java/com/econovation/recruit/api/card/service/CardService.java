@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +58,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "boardCardsByNavigationId", key = "#navigationId")
     public List<BoardCardResponseDto> getByNavigationId(Integer navigationId, Integer year) {
         Long userId = SecurityUtils.getCurrentUserId();
         List<Columns> columns = columnsUseCase.getByNavigationId(navigationId);
@@ -153,6 +156,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
     public void deleteById(Long cardId) {
         Board board = boardLoadUseCase.getBoardByCardId(cardId);
         Result<Board> prevBoard = boardLoadUseCase.getBoardByNextBoardId(board.getId());
@@ -186,6 +190,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
     public void update(Long cardId, UpdateWorkCardDto updateWorkCardDto) {
         Card card = cardLoadPort.findById(cardId);
         //        단 title 이 null일 수도 있고, content가 null일 수도 있다.

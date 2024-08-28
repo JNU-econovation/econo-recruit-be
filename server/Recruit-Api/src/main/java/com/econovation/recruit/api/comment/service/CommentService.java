@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,7 @@ public class CommentService implements CommentUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
     public Comment saveComment(CommentRegisterDto commentDto) {
         Long userId = SecurityUtils.getCurrentUserId();
         // applicantId null 이면 "" 으로 바꿔준다. cardId 가 null 이면 0 으로 바꿔준다.
@@ -81,6 +83,7 @@ public class CommentService implements CommentUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
     public void deleteComment(Long commentId) {
         Long idpId = SecurityUtils.getCurrentUserId();
         Comment comment = commentLoadPort.findById(commentId);
