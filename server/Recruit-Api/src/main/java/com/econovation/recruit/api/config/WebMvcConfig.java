@@ -2,7 +2,10 @@ package com.econovation.recruit.api.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -23,4 +26,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
     //        //        registrationBean.setUrlPatterns(Arrays.asList("/api/v1/*"));
     //        return registrationBean;3
     //    }
+
+    @Override
+    public void addInterceptors(final InterceptorRegistry registry) {
+        CacheControl cacheControl = CacheControl.noCache().mustRevalidate();
+
+        WebContentInterceptor webContentInterceptor = new WebContentInterceptor();
+        webContentInterceptor.addCacheMapping(cacheControl, "/**");
+
+        registry.addInterceptor(webContentInterceptor);
+    }
 }
