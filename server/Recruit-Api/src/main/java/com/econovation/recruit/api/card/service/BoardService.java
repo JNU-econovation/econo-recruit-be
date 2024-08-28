@@ -209,6 +209,10 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "columnsByNavigationId", allEntries = true),
+            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    })
     public Columns createColumn(String title, Integer navigationId) {
         Columns column = Columns.builder().title(title).navigationId(navigationId).build();
 
@@ -312,6 +316,10 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "columnsByNavigationId", allEntries = true),
+            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    })
     public void updateColumnLocation(UpdateLocationColumnDto updateLocationDto) {
         // 첫번째로 옮기는 경우 (nextColumnId == 0)
         if (updateLocationDto.getTargetColumnId().equals(0)) {
