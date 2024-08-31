@@ -41,6 +41,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     private final BoardLoadPort boardLoadPort;
     private final ColumnLoadPort columnLoadPort;
     private final ColumnRecordPort columnRecordPort;
+    private final BoardCacheService boardCacheService;
 
     /*    @Override
     public Board save(Map<String, Integer> newestLocation, String hopeField, Integer navLoc) {
@@ -259,9 +260,10 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
-    @Cacheable(value = "boardsByColumnsIds")
     public List<Board> getBoardByColumnsIds(List<Integer> columnsIds) {
-        return boardLoadPort.getBoardByColumnsIds(columnsIds);
+        return columnsIds.stream()
+                .flatMap(columnId -> boardCacheService.getBoardByColumnsId(columnId).stream())
+                .toList();
     }
 
     @Override
