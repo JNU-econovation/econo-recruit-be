@@ -20,6 +20,7 @@ dependencies {
     api 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
     api 'com.sun.mail:javax.mail:1.6.2'
     implementation 'org.apache.commons:commons-email:1.5'
+    api 'org.springframework.retry:spring-retry'
 
     // amazon ses
     api 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
@@ -31,4 +32,7 @@ dependencies {
 
     // pdf
     api 'org.xhtmlrenderer:flying-saucer-pdf:9.1.20'
+
+    //csv
+    api 'com.opencsv:opencsv:5.5'
 }

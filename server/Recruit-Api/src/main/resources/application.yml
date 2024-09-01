@@ -71,11 +71,13 @@ econovation:
     period:
       start: ${RECRUIT_PERIOD_START:2024-03-04T00:00:00}
       end: ${RECRUIT_PERIOD_END:2024-03-15T23:59:59}
-      passedDate: ${RECRUIT_PERIOD_PASSED_DATE:2024-03-18T09:00:00}
+      passedDate: ${RECRUIT_PERIOD_PASSED_DATE:0 09 19 17 3 *}
+      interviewPassedDate: ${RECRUIT_PERIOD_INTERVIEW_DATE:0 08 18 17 3 *}
     valid:
       enabled: ${RECRUIT_PERIOD_ENABLED:false}
     admin:
       email: ${RECRUIT_ADMIN_EMAIL:email@gmail.com}
+
 notification:
   email:
     enabled: ${NOTIFICATION_EMAIL_ENABLED:true}

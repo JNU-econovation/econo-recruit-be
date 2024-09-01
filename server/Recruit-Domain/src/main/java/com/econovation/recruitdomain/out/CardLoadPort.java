@@ -4,6 +4,7 @@ import com.econovation.recruitdomain.domains.card.domain.Card;
 import java.util.List;
 
 public interface CardLoadPort {
+    List<String> findApplicantIdByColumnTitle(String columnTitle);
 
     List<Card> findAll();
 

@@ -61,6 +61,11 @@ public class TimeTableService implements TimeTableRegisterUseCase, TimeTableLoad
     }
 
     @Override
+    public List<TimeTable> getTimeTableByApplicantIdIn(List<String> applicantIds) {
+        return null;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Map<Integer, List<String>> findAllSimpleApplicantWithTimeTable() {
         List<TimeTable> timeTables = timeTableLoadPort.findAll();

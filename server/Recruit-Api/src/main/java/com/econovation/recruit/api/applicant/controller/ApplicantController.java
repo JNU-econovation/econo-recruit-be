@@ -16,8 +16,10 @@ import com.econovation.recruitdomain.domains.applicant.dto.TimeTableVo;
 import com.econovation.recruitdomain.domains.dto.EmailSendDto;
 import com.econovation.recruitdomain.domains.timetable.domain.TimeTable;
 import com.econovation.recruitinfrastructure.apache.CommonsEmailSender;
+import com.econovation.recruitinfrastructure.mail.ApplicantPassEmailScheduler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,7 @@ public class ApplicantController {
     private final CommonsEmailSender commonsEmailSender;
     private final CommandGateway commandGateway;
     private final ApplicantValidator applicantValidator;
+    private final ApplicantPassEmailScheduler applicantPassEmailScheduler;
 
     @Value("${econovation.year}")
     private Integer year;
@@ -145,5 +148,17 @@ public class ApplicantController {
         commonsEmailSender.send(
                 emailSendDto.getEmail(), emailSendDto.getApplicantId(), LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(
+            summary = "서류 합격자/탈락자 에게 단체 메일을 보냅니다.",
+            description = "스케줄링이 되지 않을 경우 강제 발송을 위해 사용합니다. / 메일 발송 실패일 경우 최대 3회 재발송합니다.")
+    @TimeTrace
+    @GetMapping("/applicants/document-pass/mail")
+    public ResponseEntity sendDocumentEmail() throws IOException {
+        log.info("서류 합격/탈락자 이메일 발송 시작");
+        applicantPassEmailScheduler.sendDocumentFailEmail();
+        applicantPassEmailScheduler.sendDocumentPassEmail();
+        return new ResponseEntity<>("이메일 발송 완료", HttpStatus.OK);
     }
 }
