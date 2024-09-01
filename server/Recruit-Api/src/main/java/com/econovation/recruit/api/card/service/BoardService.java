@@ -4,6 +4,11 @@ import static com.econovation.recruitcommon.consts.RecruitStatic.*;
 
 import com.econovation.recruit.api.card.usecase.BoardLoadUseCase;
 import com.econovation.recruit.api.card.usecase.BoardRegisterUseCase;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCardLocation;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByColumnLocation;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByHopeField;
+import com.econovation.recruitcommon.annotation.InvalidateCache;
+import com.econovation.recruitcommon.annotation.InvalidateCaches;
 import com.econovation.recruitcommon.utils.Result;
 import com.econovation.recruitdomain.common.aop.redissonLock.RedissonLock;
 import com.econovation.recruitdomain.domains.board.domain.Board;
@@ -25,9 +30,6 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,16 +110,16 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "boardsByColumnsIds", allEntries = true),
-            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    @InvalidateCaches({
+            @InvalidateCache(cacheName = "boardsByColumnsIds", key = "#board.columnId"),
+            @InvalidateCache(cacheName = "boardCardsByNavigationId", key = "#board.navigationId")
     })
     public void execute(Board board) {
         boardRecordPort.save(board);
     }
 
     @Override
-    @CacheEvict(value = "boardsByColumnsIds", allEntries = true)
+    @InvalidateCache(cacheName = "boardsByColumnsIds", key = "#columnId")
     public Board createWorkBoard(Integer columnId, Long cardId) {
         Columns column = columnLoadPort.findById(columnId);
         List<Board> boardByNavigationIdAndColumnId =
@@ -169,13 +171,8 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }*/
 
     @Override
-    @Caching(evict = {
-            @CacheEvict(value = "boardsByColumnsIds", allEntries = true),
-            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
-    })
+    @InvalidateCacheByHopeField
     public void createApplicantBoard(String applicantId, String hopeField, Long cardId) {
-        //        \"hopeField\" -> hopeField 로 변경
-        hopeField = hopeField;
         Integer columnsId = 0;
         if (hopeField.equals("개발자")) {
             columnsId = DEVELOPER_COLUMNS_ID;
@@ -210,9 +207,9 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "columnsByNavigationId", allEntries = true),
-            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    @InvalidateCaches({
+            @InvalidateCache(cacheName = "columnsByNavigationId", key = "#navigationId"),
+            @InvalidateCache(cacheName = "boardCardsByNavigationId", key = "#navigationId")
     })
     public Columns createColumn(String title, Integer navigationId) {
         Columns column = Columns.builder().title(title).navigationId(navigationId).build();
@@ -294,10 +291,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
             paramClassType = UpdateLocationBoardDto.class,
             leaseTime = 500,
             waitTime = 500)
-    @Caching(evict = {
-            @CacheEvict(value = "boardsByColumnsIds", allEntries = true),
-            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
-    })
+    @InvalidateCacheByCardLocation
     public void relocateCard(UpdateLocationBoardDto updateLocationBoardDto) {
         List<Integer> invisibleBoard = List.of(1, 2, 3);
         // 기준 보드는 이동이 불가하다.
@@ -318,10 +312,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
 
     @Override
     @Transactional
-    @Caching(evict = {
-            @CacheEvict(value = "columnsByNavigationId", allEntries = true),
-            @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
-    })
+    @InvalidateCacheByColumnLocation
     public void updateColumnLocation(UpdateLocationColumnDto updateLocationDto) {
         // 첫번째로 옮기는 경우 (nextColumnId == 0)
         if (updateLocationDto.getTargetColumnId().equals(0)) {
@@ -363,7 +354,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
-    @CacheEvict(value = "boardsByColumnsIds", allEntries = true)
+    @InvalidateCache(cacheName = "boardsByColumnsIds", key = "#board.columnId")
     public void delete(Board board) {
         boardRecordPort.delete(board);
     }
