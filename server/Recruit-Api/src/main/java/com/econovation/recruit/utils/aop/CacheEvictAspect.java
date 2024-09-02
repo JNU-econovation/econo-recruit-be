@@ -5,16 +5,22 @@ import static com.econovation.recruitcommon.consts.RecruitStatic.DEVELOPER_COLUM
 import static com.econovation.recruitcommon.consts.RecruitStatic.PLANNER_COLUMNS_ID;
 
 import com.econovation.recruit.utils.SpELParser;
+import com.econovation.recruitcommon.annotation.InvalidateCache;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCardId;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByCardLocation;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByColumnLocation;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCreateWorkCard;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByHopeField;
-import com.econovation.recruitcommon.annotation.InvalidateCache;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByUpdateWorkCard;
 import com.econovation.recruitcommon.annotation.InvalidateCaches;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.Columns;
+import com.econovation.recruitdomain.domains.card.domain.Card;
+import com.econovation.recruitdomain.domains.dto.CreateWorkCardDto;
 import com.econovation.recruitdomain.domains.dto.UpdateLocationBoardDto;
 import com.econovation.recruitdomain.domains.dto.UpdateLocationColumnDto;
 import com.econovation.recruitdomain.out.BoardLoadPort;
+import com.econovation.recruitdomain.out.CardLoadPort;
 import com.econovation.recruitdomain.out.ColumnLoadPort;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
@@ -34,6 +40,7 @@ public class CacheEvictAspect {
     private final String BOARD_CARDS_BY_NAVIGATION_ID = "boardCardsByNavigationId";
 
     private final CacheManager cacheManager;
+    private final CardLoadPort cardLoadPort;
     private final BoardLoadPort boardLoadPort;
     private final ColumnLoadPort columnLoadPort;
 
@@ -54,11 +61,11 @@ public class CacheEvictAspect {
             evictCache(cacheName, null);
             return;
         }
-        Integer parsedKey = (Integer) SpELParser.getDynamicValue(joinPoint, invalidateCache.key());
+        String parsedKey = (String) SpELParser.getDynamicValue(joinPoint, invalidateCache.key());
         evictCache(cacheName, parsedKey);
     }
 
-    private void evictCache(String cacheName, Integer key) {
+    private void evictCache(String cacheName, String key) {
         Cache cache = cacheManager.getCache(cacheName);
         if (cache == null) {
             return;
@@ -82,8 +89,8 @@ public class CacheEvictAspect {
             }
         }
 
-        evictCache(BOARDS_BY_COLUMNS_IDS, columnsId);
-        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, 1);
+        evictCache(BOARDS_BY_COLUMNS_IDS, columnsId.toString());
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, "1");
     }
 
     @Before("@annotation(invalidateCacheByColumnLocation) && args(updateLocationDto)")
@@ -92,8 +99,8 @@ public class CacheEvictAspect {
         Columns column = columnLoadPort.findById(updateLocationDto.getColumnId());
         Integer navigationId = column.getNavigationId();
 
-        evictCache(COLUMNS_BY_NAVIGATION_ID, navigationId);
-        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, navigationId);
+        evictCache(COLUMNS_BY_NAVIGATION_ID, navigationId.toString());
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, navigationId.toString());
     }
 
     @Before("@annotation(invalidateCacheByCardLocation) && args(updateLocationDto)")
@@ -109,6 +116,31 @@ public class CacheEvictAspect {
         evictCache(BOARDS_BY_COLUMNS_IDS, currentBoard.getColumnId());
         evictCache(BOARDS_BY_COLUMNS_IDS, targetBoard.getColumnId());
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, navigationId);
+        evictCache(BOARDS_BY_COLUMNS_IDS, currentBoard.getColumnId().toString());
+        evictCache(BOARDS_BY_COLUMNS_IDS, targetBoard.getColumnId().toString());
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, navigationId.toString());
+    }
+
+    @Before("@annotation(invalidateCacheByCardId)")
+    public void invalidateCacheByCardId(JoinPoint joinPoint, InvalidateCacheByCardId invalidateCacheByCardId) {
+        Long cardId = (Long) joinPoint.getArgs()[0];
+        Board board = boardLoadPort.getBoardByCardId(cardId);
+
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
+    }
+
+    @Before("@annotation(invalidateCacheByCreateWorkCard) && args(createWorkCardDto)")
+    public void invalidateCacheByCreateWorkCard(InvalidateCacheByCreateWorkCard invalidateCacheByCreateWorkCard, CreateWorkCardDto createWorkCardDto) {
+        Columns column = columnLoadPort.findById(createWorkCardDto.getColumnId());
+
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, column.getNavigationId().toString());
+    }
+
+    @Before("@annotation(invalidateCacheByUpdateWorkCard) && args(cardId, ..)")
+    public void invalidateCacheByUpdateWorkCard(InvalidateCacheByUpdateWorkCard invalidateCacheByUpdateWorkCard, Long cardId) {
+        Board board = boardLoadPort.getBoardByCardId(cardId);
+
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
     }
 
 }
