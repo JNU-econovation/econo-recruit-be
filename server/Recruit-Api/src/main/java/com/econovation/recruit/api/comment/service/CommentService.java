@@ -2,6 +2,9 @@ package com.econovation.recruit.api.comment.service;
 
 import com.econovation.recruit.api.comment.usecase.CommentUseCase;
 import com.econovation.recruit.api.config.security.SecurityUtils;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCreateComment;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCommentId;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByDeleteComment;
 import com.econovation.recruitcommon.utils.Result;
 import com.econovation.recruitdomain.common.aop.redissonLock.RedissonLock;
 import com.econovation.recruitdomain.domains.card.domain.Card;
@@ -24,7 +27,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +43,7 @@ public class CommentService implements CommentUseCase {
 
     @Override
     @Transactional
-    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    @InvalidateCacheByCreateComment
     public Comment saveComment(CommentRegisterDto commentDto) {
         Long userId = SecurityUtils.getCurrentUserId();
         // applicantId null 이면 "" 으로 바꿔준다. cardId 가 null 이면 0 으로 바꿔준다.
@@ -83,7 +86,7 @@ public class CommentService implements CommentUseCase {
 
     @Override
     @Transactional
-    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
+    @InvalidateCacheByCommentId
     public void deleteComment(Long commentId) {
         Long idpId = SecurityUtils.getCurrentUserId();
         Comment comment = commentLoadPort.findById(commentId);
@@ -120,6 +123,7 @@ public class CommentService implements CommentUseCase {
     @Override
     @RedissonLock(LockName = "댓글좋아요", identifier = "commentId")
     @Transactional
+    @InvalidateCacheByCommentId
     public void createCommentLike(Long commentId) {
         // 기존에 눌렀으면 취소 처리
         Long idpId = SecurityUtils.getCurrentUserId();
@@ -148,6 +152,7 @@ public class CommentService implements CommentUseCase {
     @Override
     @RedissonLock(LockName = "댓글좋아요", identifier = "commentId")
     @Transactional
+    @InvalidateCacheByCommentId
     public void deleteCommentLike(Long commentId) {
         // 현재 내가 눌렀던 댓글만 삭제할 수 있다.
         Long idpId = SecurityUtils.getCurrentUserId();
@@ -220,6 +225,7 @@ public class CommentService implements CommentUseCase {
 
     @Override
     @Transactional
+    @InvalidateCacheByCommentId
     public void updateCommentContent(Long commentId, Map<String, String> contents) {
         String content = contents.get("content");
         // 내가 작성한 comment 만 수정할 수 있다.
@@ -233,6 +239,7 @@ public class CommentService implements CommentUseCase {
     //
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "commentsByApplicantId", key = "#applicantId")
     public List<CommentPairVo> findByApplicantId(String applicantId) {
         Long idpId = SecurityUtils.getCurrentUserId();
         List<Comment> comments = commentLoadPort.findByApplicantId(applicantId);
@@ -241,6 +248,7 @@ public class CommentService implements CommentUseCase {
 
     @Override
     @Transactional
+    @InvalidateCacheByDeleteComment
     public void deleteCommentByCardId(Long cardId) {
         List<Comment> comments = commentLoadPort.findByCardId(cardId);
         if (comments.isEmpty()) {

@@ -9,19 +9,25 @@ import com.econovation.recruitcommon.annotation.InvalidateCache;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByCardId;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByCardLocation;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByColumnLocation;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCreateComment;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByCreateWorkCard;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCommentId;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByDeleteComment;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByHopeField;
 import com.econovation.recruitcommon.annotation.InvalidateCacheByUpdateWorkCard;
 import com.econovation.recruitcommon.annotation.InvalidateCaches;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.Columns;
 import com.econovation.recruitdomain.domains.card.domain.Card;
+import com.econovation.recruitdomain.domains.comment.domain.Comment;
+import com.econovation.recruitdomain.domains.dto.CommentRegisterDto;
 import com.econovation.recruitdomain.domains.dto.CreateWorkCardDto;
 import com.econovation.recruitdomain.domains.dto.UpdateLocationBoardDto;
 import com.econovation.recruitdomain.domains.dto.UpdateLocationColumnDto;
 import com.econovation.recruitdomain.out.BoardLoadPort;
 import com.econovation.recruitdomain.out.CardLoadPort;
 import com.econovation.recruitdomain.out.ColumnLoadPort;
+import com.econovation.recruitdomain.out.CommentLoadPort;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -38,11 +44,13 @@ public class CacheEvictAspect {
     private final String BOARDS_BY_COLUMNS_IDS = "boardsByColumnsIds";
     private final String COLUMNS_BY_NAVIGATION_ID = "columnsByNavigationId";
     private final String BOARD_CARDS_BY_NAVIGATION_ID = "boardCardsByNavigationId";
+    private final String COMMENTS_BY_APPLICANT_ID = "commentsByApplicantId";
 
     private final CacheManager cacheManager;
     private final CardLoadPort cardLoadPort;
     private final BoardLoadPort boardLoadPort;
     private final ColumnLoadPort columnLoadPort;
+    private final CommentLoadPort commentLoadPort;
 
     @Before("@annotation(invalidateCaches)")
     public void invalidateCaches(JoinPoint joinPoint, InvalidateCaches invalidateCaches) {
@@ -113,9 +121,6 @@ public class CacheEvictAspect {
 
         Integer navigationId = currentBoard.getNavigationId();
 
-        evictCache(BOARDS_BY_COLUMNS_IDS, currentBoard.getColumnId());
-        evictCache(BOARDS_BY_COLUMNS_IDS, targetBoard.getColumnId());
-        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, navigationId);
         evictCache(BOARDS_BY_COLUMNS_IDS, currentBoard.getColumnId().toString());
         evictCache(BOARDS_BY_COLUMNS_IDS, targetBoard.getColumnId().toString());
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, navigationId.toString());
@@ -141,6 +146,31 @@ public class CacheEvictAspect {
         Board board = boardLoadPort.getBoardByCardId(cardId);
 
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
+    }
+
+    @Before("@annotation(invalidateCacheByCreateComment) && args(commentDto)")
+    public void invalidateCacheByCreateComment(InvalidateCacheByCreateComment invalidateCacheByCreateComment, CommentRegisterDto commentDto) {
+        Board board = boardLoadPort.getBoardByCardId(commentDto.getCardId());
+
+        // Card의 comment count를 변경하므로 무효화
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
+        evictCache(COMMENTS_BY_APPLICANT_ID, commentDto.getApplicantId());
+    }
+
+    @Before("@annotation(invalidateCacheByDeleteComment) && args(cardId)")
+    public void invalidateCacheByDeleteComment(InvalidateCacheByDeleteComment invalidateCacheByDeleteComment, Long cardId) {
+        Board board = boardLoadPort.getBoardByCardId(cardId);
+        Card card = cardLoadPort.findById(cardId);
+
+        evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
+        evictCache(COMMENTS_BY_APPLICANT_ID, card.getApplicantId());
+    }
+
+    @Before("@annotation(invalidateCacheByCommentId) && args(commentId, ..)")
+    public void invalidateCacheByCommentId(InvalidateCacheByCommentId invalidateCacheByCommentId, Long commentId) {
+        Comment comment = commentLoadPort.findById(commentId);
+
+        evictCache(COMMENTS_BY_APPLICANT_ID, comment.getApplicantId());
     }
 
 }
