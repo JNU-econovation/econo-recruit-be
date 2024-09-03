@@ -172,13 +172,8 @@ public class CacheEvictAspect {
         Board board = boardLoadPort.getBoardByCardId(cardId);
         Card card = cardLoadPort.findById(cardId);
 
-        // 댓글 삭제 시 카드의 댓글 수 변경으로 인한 무효화
+        // 댓글 삭제 시 업무카드의 댓글 수 변경으로 인한 무효화
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
-
-        // 지원서 카드의 댓글 삭제 시 지원자의 댓글 목록 조회 캐시 무효화
-        if (card.getApplicantId() != null) {
-            evictCache(COMMENTS_BY_APPLICANT_ID, card.getApplicantId());
-        }
     }
 
     @Before("@annotation(invalidateCacheByCommentId) && args(commentId, ..)")
