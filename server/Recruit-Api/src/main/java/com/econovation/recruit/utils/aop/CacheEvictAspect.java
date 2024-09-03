@@ -150,10 +150,20 @@ public class CacheEvictAspect {
 
     @Before("@annotation(invalidateCacheByCreateComment) && args(commentDto)")
     public void invalidateCacheByCreateComment(InvalidateCacheByCreateComment invalidateCacheByCreateComment, CommentRegisterDto commentDto) {
-        Board board = boardLoadPort.getBoardByCardId(commentDto.getCardId());
+        // 업무카드 댓글 생성 요청
+        if (commentDto.getApplicantId() == null) {
+            Board board = boardLoadPort.getBoardByCardId(commentDto.getCardId());
+            evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
+            return;
+        }
+
+        // 지원서카드 댓글 생성 요청
+        Card card = cardLoadPort.findByApplicantId(commentDto.getApplicantId());
+        Board board = boardLoadPort.getBoardByCardId(card.getId());
 
         // Card의 comment count를 변경하므로 무효화
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
+        // 지원자의 댓글 목록 조회 캐시 무효화
         evictCache(COMMENTS_BY_APPLICANT_ID, commentDto.getApplicantId());
     }
 
@@ -162,15 +172,23 @@ public class CacheEvictAspect {
         Board board = boardLoadPort.getBoardByCardId(cardId);
         Card card = cardLoadPort.findById(cardId);
 
+        // 댓글 삭제 시 카드의 댓글 수 변경으로 인한 무효화
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, board.getNavigationId().toString());
-        evictCache(COMMENTS_BY_APPLICANT_ID, card.getApplicantId());
+
+        // 지원서 카드의 댓글 삭제 시 지원자의 댓글 목록 조회 캐시 무효화
+        if (card.getApplicantId() != null) {
+            evictCache(COMMENTS_BY_APPLICANT_ID, card.getApplicantId());
+        }
     }
 
     @Before("@annotation(invalidateCacheByCommentId) && args(commentId, ..)")
     public void invalidateCacheByCommentId(InvalidateCacheByCommentId invalidateCacheByCommentId, Long commentId) {
         Comment comment = commentLoadPort.findById(commentId);
 
-        evictCache(COMMENTS_BY_APPLICANT_ID, comment.getApplicantId());
+        // 지원서 카드의 댓글인 경우 캐시 무효화
+        if (comment.getApplicantId() != null) {
+            evictCache(COMMENTS_BY_APPLICANT_ID, comment.getApplicantId());
+        }
     }
 
 }
