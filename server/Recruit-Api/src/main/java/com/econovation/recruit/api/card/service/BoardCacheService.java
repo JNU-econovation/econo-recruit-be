@@ -13,7 +13,7 @@ public class BoardCacheService {
 
     private final BoardLoadPort boardLoadPort;
 
-    @Cacheable(value = "boardsByColumnsIds", key = "#columnsId")
+    @Cacheable(value = "boardsByColumnsId", key = "#columnsId")
     public List<Board> getBoardByColumnsId(Integer columnsId) {
         return boardLoadPort.getBoardByColumnsId(columnsId);
     }

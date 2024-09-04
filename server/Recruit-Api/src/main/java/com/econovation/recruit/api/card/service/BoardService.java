@@ -111,7 +111,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
 
     @Override
     @InvalidateCaches({
-            @InvalidateCache(cacheName = "boardsByColumnsIds", key = "#board.columnId"),
+            @InvalidateCache(cacheName = "boardsByColumnsId", key = "#board.columnId"),
             @InvalidateCache(cacheName = "boardCardsByNavigationId", key = "#board.navigationId")
     })
     public void execute(Board board) {
@@ -119,7 +119,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
-    @InvalidateCache(cacheName = "boardsByColumnsIds", key = "#columnId")
+    @InvalidateCache(cacheName = "boardsByColumnsId", key = "#columnId")
     public Board createWorkBoard(Integer columnId, Long cardId) {
         Columns column = columnLoadPort.findById(columnId);
         List<Board> boardByNavigationIdAndColumnId =
@@ -354,7 +354,7 @@ public class BoardService implements BoardLoadUseCase, BoardRegisterUseCase {
     }
 
     @Override
-    @InvalidateCache(cacheName = "boardsByColumnsIds", key = "#board.columnId")
+    @InvalidateCache(cacheName = "boardsByColumnsId", key = "#board.columnId")
     public void delete(Board board) {
         boardRecordPort.delete(board);
     }

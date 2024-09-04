@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CacheEvictAspect {
 
-    private final String BOARDS_BY_COLUMNS_IDS = "boardsByColumnsIds";
+    private final String BOARDS_BY_COLUMNS_ID = "boardsByColumnsId";
     private final String COLUMNS_BY_NAVIGATION_ID = "columnsByNavigationId";
     private final String BOARD_CARDS_BY_NAVIGATION_ID = "boardCardsByNavigationId";
     private final String COMMENTS_BY_APPLICANT_ID = "commentsByApplicantId";
@@ -97,7 +97,7 @@ public class CacheEvictAspect {
             }
         }
 
-        evictCache(BOARDS_BY_COLUMNS_IDS, columnsId.toString());
+        evictCache(BOARDS_BY_COLUMNS_ID, columnsId.toString());
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, "1");
     }
 
@@ -121,8 +121,8 @@ public class CacheEvictAspect {
 
         Integer navigationId = currentBoard.getNavigationId();
 
-        evictCache(BOARDS_BY_COLUMNS_IDS, currentBoard.getColumnId().toString());
-        evictCache(BOARDS_BY_COLUMNS_IDS, targetBoard.getColumnId().toString());
+        evictCache(BOARDS_BY_COLUMNS_ID, currentBoard.getColumnId().toString());
+        evictCache(BOARDS_BY_COLUMNS_ID, targetBoard.getColumnId().toString());
         evictCache(BOARD_CARDS_BY_NAVIGATION_ID, navigationId.toString());
     }
 
