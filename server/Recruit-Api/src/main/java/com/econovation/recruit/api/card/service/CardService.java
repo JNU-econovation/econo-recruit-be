@@ -10,6 +10,8 @@ import com.econovation.recruit.api.config.security.SecurityUtils;
 import com.econovation.recruitcommon.utils.Result;
 import com.econovation.recruitdomain.common.aop.domainEvent.Events;
 import com.econovation.recruitdomain.common.events.WorkCardDeletedEvent;
+import com.econovation.recruitdomain.domains.applicant.adaptor.AnswerAdaptor;
+import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.exception.ApplicantProhibitDeleteException;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.CardType;
@@ -41,6 +43,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
     private final ColumnsUseCase columnsUseCase;
     private final ApplicantQueryUseCase applicantQueryUseCase;
     private final LabelLoadPort labelLoadPort;
+    private final AnswerAdaptor answerAdaptor;
 
     @Override
     @Transactional(readOnly = true)
@@ -50,7 +53,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BoardCardResponseDto> getByNavigationId(Integer navigationId) {
+    public List<BoardCardResponseDto> getByNavigationId(Integer navigationId, Integer year) {
         Long userId = SecurityUtils.getCurrentUserId();
         List<Columns> columns = columnsUseCase.getByNavigationId(navigationId);
 
@@ -58,6 +61,21 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                 columns.stream().map(Columns::getId).collect(Collectors.toList());
 
         List<Board> boards = boardLoadUseCase.getBoardByColumnsIds(columnsIds);
+
+        List<MongoAnswer> mongoAnswers = answerAdaptor.findAll();
+
+        Map<String, Integer> yearByAnswerIdMap = mongoAnswers.stream()
+                .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
+
+        boards = boards.stream()
+                .filter(
+                        board -> {
+                            Long cardId = board.getCardId();
+                            String applicantId = cardLoadPort.findById(cardId).getApplicantId();
+                            return yearByAnswerIdMap.get(applicantId).equals(year);
+                        })
+                .toList();
+
         List<Card> cards =
                 cardLoadPort.findByIdIn(
                         boards.stream().map(Board::getCardId).collect(Collectors.toList()));
