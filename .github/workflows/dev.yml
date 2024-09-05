@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - develop
-      - backend
 env:
   SPRING_PROFILES_ACTIVE: local
   ENVIRONMENT: production

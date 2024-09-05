@@ -15,7 +15,7 @@ data:
       id: ${ADMINISTRATOR_ID:admin}
       password: ${ADMINISTRATOR_PASSWORD:password}
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:10023}
 throttle:
   greedyRefill: ${THROTTLE_GREEDY_REFILL:10}
   overdraft: ${THROTTLE_OVERDRAFT:10}

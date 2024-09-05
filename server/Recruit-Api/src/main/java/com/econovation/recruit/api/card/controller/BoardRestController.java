@@ -33,7 +33,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @SecurityRequirement(name = "access-token")
 @RestController
@@ -157,17 +164,17 @@ public class BoardRestController {
     }
 
     @Operation(
-            summary = "지원서 칸반보드 조회 by navigationId and year",
-            description = "navigationId와 year 해당하는 모든 칸반을 조회합니다.")
+            summary = "지원서 칸반보드 조회 by navigationId",
+            description = "navigationId에 해당하는 모든 칸반을 조회합니다.")
     @GetMapping("/navigations/{navigation-id}/boards")
     public ResponseEntity<List<BoardCardResponseDto>> getBoardByNavigationId(
-            @PathVariable("navigation-id") Integer navigationId,
-            @RequestParam("year") Integer year) {
-        return new ResponseEntity<>(cardLoadUseCase.getByNavigationIdAndYear(navigationId, year), HttpStatus.OK);
+            @PathVariable("navigation-id") Integer navigationId) {
+        return new ResponseEntity<>(cardLoadUseCase.getByNavigationId(navigationId), HttpStatus.OK);
     }
 
-    @PostMapping("/page/{page}/boards")@Operation(summary = "지원서 조회(원하는 field) 만 조회", description = "원하는 field만(리스트) 조회합니다.")
+    @Operation(summary = "지원서 조회(원하는 field) 만 조회", description = "원하는 field만(리스트) 조회합니다.")
     @ApiErrorExceptionsExample(FindBoardExceptionDocs.class)
+    @PostMapping("/page/{page}/boards")
     public ResponseEntity<List<Map<String, Object>>> getBoardByNavigationId(
             @PathVariable(name = "page") Integer page, @RequestBody List<String> fields) {
         return new ResponseEntity<>(answerQueryUseCase.execute(fields, page), HttpStatus.OK);
