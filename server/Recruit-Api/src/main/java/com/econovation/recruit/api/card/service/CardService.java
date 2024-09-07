@@ -72,13 +72,18 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
         Map<String, Integer> yearByAnswerIdMap = mongoAnswers.stream()
                 .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
 
+        List<Card> cards = cardLoadPort.findAll();
+
+        Map<Long, String> answerIdByCardIdMap = cards.stream()
+                .collect(Collectors.toMap(Card::getId, Card::getApplicantId));
+
         boards = boards.stream()
                 .filter(
                         board -> {
                             Long cardId = board.getCardId();
 
                             if(cardId!=null) {
-                                String applicantId = cardLoadPort.findById(cardId).getApplicantId();
+                                String applicantId = answerIdByCardIdMap.get(cardId);
                                 return yearByAnswerIdMap.get(applicantId).equals(year);
                             }
 
@@ -86,7 +91,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                         })
                 .toList();
 
-        List<Card> cards =
+        cards =
                 cardLoadPort.findByIdIn(
                         boards.stream().map(Board::getCardId).collect(Collectors.toList()));
 
