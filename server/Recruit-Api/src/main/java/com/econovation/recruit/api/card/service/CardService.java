@@ -12,6 +12,7 @@ import com.econovation.recruitdomain.common.aop.domainEvent.Events;
 import com.econovation.recruitdomain.common.events.WorkCardDeletedEvent;
 import com.econovation.recruitdomain.domains.applicant.adaptor.AnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
+import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.exception.ApplicantProhibitDeleteException;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.CardType;
@@ -28,10 +29,13 @@ import com.econovation.recruitdomain.out.LabelLoadPort;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.swing.text.html.Option;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +48,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
     private final ApplicantQueryUseCase applicantQueryUseCase;
     private final LabelLoadPort labelLoadPort;
     private final AnswerAdaptor answerAdaptor;
+    private final MongoAnswerAdaptor mongoAnswerAdaptor;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,8 +76,13 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                 .filter(
                         board -> {
                             Long cardId = board.getCardId();
-                            String applicantId = cardLoadPort.findById(cardId).getApplicantId();
-                            return yearByAnswerIdMap.get(applicantId).equals(year);
+
+                            if(cardId!=null) {
+                                String applicantId = cardLoadPort.findById(cardId).getApplicantId();
+                                return yearByAnswerIdMap.get(applicantId).equals(year);
+                            }
+
+                            return false;
                         })
                 .toList();
 
