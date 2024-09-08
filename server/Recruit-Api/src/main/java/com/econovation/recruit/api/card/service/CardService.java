@@ -35,8 +35,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
-
 @Service
 @RequiredArgsConstructor
 public class CardService implements CardRegisterUseCase, CardLoadUseCase {
@@ -79,16 +77,12 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
         boards = boards.stream()
                 .filter(
-                        board -> {
-                            Long cardId = board.getCardId();
-
-                            if(cardId!=null) {
-                                String applicantId = answerIdByCardIdMap.get(cardId);
-                                return yearByAnswerIdMap.get(applicantId).equals(year);
-                            }
-
-                            return false;
-                        })
+                        board ->
+                                Optional.ofNullable(board.getCardId())
+                                .map(id -> answerIdByCardIdMap.getOrDefault(id, null))
+                                .map(id -> yearByAnswerIdMap.getOrDefault(id, null))
+                                .map(y -> y.equals(year))
+                                .orElse(false))
                 .toList();
 
         cards =
