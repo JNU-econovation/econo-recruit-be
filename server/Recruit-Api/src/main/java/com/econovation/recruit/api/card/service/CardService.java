@@ -79,10 +79,10 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                 .filter(
                         board ->
                                 Optional.ofNullable(board.getCardId())
-                                .map(id -> answerIdByCardIdMap.getOrDefault(id, null))
-                                .map(id -> yearByAnswerIdMap.getOrDefault(id, null))
-                                .map(y -> y.equals(year))
-                                .orElse(false))
+                                    .map(answerIdByCardIdMap::get)
+                                    .map(yearByAnswerIdMap::get)
+                                    .map(y -> y.equals(year))
+                                    .orElse(false))
                 .toList();
 
         cards =
