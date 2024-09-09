@@ -77,12 +77,16 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
         boards = boards.stream()
                 .filter(
-                        board ->
-                                Optional.ofNullable(board.getCardId())
-                                .map(id -> answerIdByCardIdMap.getOrDefault(id, null))
-                                .map(id -> yearByAnswerIdMap.getOrDefault(id, null))
-                                .map(y -> y.equals(year))
-                                .orElse(false))
+                        board ->{
+                            if(board.getId()==1 || board.getId()==2 || board.getId()==3) {
+                                return true;
+                            }
+                            return Optional.ofNullable(board.getCardId())
+                                    .map(answerIdByCardIdMap::get)
+                                    .map(yearByAnswerIdMap::get)
+                                    .map(y -> y.equals(year))
+                                    .orElse(false);
+                        })
                 .toList();
 
         cards =
