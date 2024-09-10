@@ -63,7 +63,7 @@ public class RecordService implements RecordUseCase {
 
         List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
         List<Score> scores = scoreLoadPort.findByApplicantIds(applicantIds);
-        List<MongoAnswer> applicants = applicantQueryUseCase.execute(applicantIds).stream().filter(applicant -> applicant.getYear().equals(year)).toList();
+        List<MongoAnswer> applicants = applicantQueryUseCase.execute(applicantIds).stream().filter(applicant ->year == null || applicant.getYear().equals(year)).toList();
 
         if (result.isEmpty() || applicants.isEmpty()) {
             return RecordsViewResponseDto.of(
@@ -76,13 +76,13 @@ public class RecordService implements RecordUseCase {
         Map<String, Integer> yearByAnswerIdMap = applicants.stream().collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
         Map<String, Double> scoreMap =
                 scores.stream()
-                        .filter(score -> yearByAnswerIdMap.get(score.getApplicantId()).equals(year))
+                        .filter(score ->year == null || yearByAnswerIdMap.get(score.getApplicantId()).equals(year))
                         .collect(
                                 Collectors.groupingBy(
                                         Score::getApplicantId,
                                         Collectors.averagingDouble(Score::getScore)));
 
-        result = result.stream().filter(record ->
+        result = result.stream().filter(record -> year == null ||
             Optional.ofNullable(record.getApplicantId())
                     .map(yearByAnswerIdMap::get)
                     .map(y -> y.equals(year))
