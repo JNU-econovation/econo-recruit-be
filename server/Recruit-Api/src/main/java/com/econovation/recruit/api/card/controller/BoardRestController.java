@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -162,7 +163,7 @@ public class BoardRestController {
     @GetMapping("/navigations/{navigation-id}/boards")
     public ResponseEntity<List<BoardCardResponseDto>> getBoardByNavigationId(
             @PathVariable("navigation-id") Integer navigationId,
-            @RequestParam("year") Integer year) {
+            @ParameterObject Integer year) {
         return new ResponseEntity<>(cardLoadUseCase.getByNavigationId(navigationId, year), HttpStatus.OK);
     }
 
