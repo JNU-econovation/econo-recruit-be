@@ -11,7 +11,7 @@ public interface RecordUseCase {
 
     List<Record> findAll();
 
-    RecordsViewResponseDto execute(Integer page, String sortType);
+    RecordsViewResponseDto execute(Integer page, Integer year, String sortType);
 
     Record findByApplicantId(String applicantId);
 

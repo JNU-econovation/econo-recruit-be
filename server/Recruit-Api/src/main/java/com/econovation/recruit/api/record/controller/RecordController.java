@@ -55,8 +55,8 @@ public class RecordController {
     @ApiErrorExceptionsExample(RecordFindExceptionDocs.class)
     @GetMapping("/page/{page}/records")
     public ResponseEntity<RecordsViewResponseDto> findAll(
-            @PathVariable(name = "page") Integer page, @ParameterObject String sortType) {
-        return new ResponseEntity<>(recordUseCase.execute(page, sortType), HttpStatus.OK);
+            @PathVariable(name = "page") Integer page, @ParameterObject String sortType, @ParameterObject Integer year) {
+        return new ResponseEntity<>(recordUseCase.execute(page, year, sortType), HttpStatus.OK);
     }
 
     @Operation(summary = "지원자의 면접기록을 전부 조회합니다")

@@ -16,12 +16,8 @@ import com.econovation.recruitdomain.domains.score.domain.Score;
 import com.econovation.recruitdomain.out.RecordLoadPort;
 import com.econovation.recruitdomain.out.RecordRecordPort;
 import com.econovation.recruitdomain.out.ScoreLoadPort;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -61,10 +57,15 @@ public class RecordService implements RecordUseCase {
      *     Records를 모두 조회합니다 )
      */
     @Override
-    public RecordsViewResponseDto execute(Integer page, String sortType) {
+    public RecordsViewResponseDto execute(Integer page, Integer year, String sortType) {
         List<Record> result = recordLoadPort.findAll(page);
         PageInfo pageInfo = getPageInfo(page);
-        if (result.isEmpty()) {
+
+        List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
+        List<Score> scores = scoreLoadPort.findByApplicantIds(applicantIds);
+        List<MongoAnswer> applicants = applicantQueryUseCase.execute(applicantIds).stream().filter(applicant ->year == null || applicant.getYear().equals(year)).toList();
+
+        if (result.isEmpty() || applicants.isEmpty()) {
             return RecordsViewResponseDto.of(
                     pageInfo,
                     Collections.emptyList(),
@@ -72,15 +73,24 @@ public class RecordService implements RecordUseCase {
                     Collections.emptyList());
         }
 
-        List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
-        List<Score> scores = scoreLoadPort.findByApplicantIds(applicantIds);
+        Map<String, Integer> yearByAnswerIdMap = applicants.stream().collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
         Map<String, Double> scoreMap =
                 scores.stream()
+                        .filter(score ->year == null || yearByAnswerIdMap.get(score.getApplicantId()).equals(year))
                         .collect(
                                 Collectors.groupingBy(
                                         Score::getApplicantId,
                                         Collectors.averagingDouble(Score::getScore)));
-        List<MongoAnswer> applicants = applicantQueryUseCase.execute(applicantIds);
+
+        result = result.stream().filter(record -> year == null ||
+            Optional.ofNullable(record.getApplicantId())
+                    .map(yearByAnswerIdMap::get)
+                    .map(y -> y.equals(year))
+                    .orElse(false)
+        )
+        .toList();
+
+        applicants = new ArrayList<>(applicants); // Unmodifiable List일 경우 Sort 불가. stream().toList()의 결과는 Unmodifiable List
 
         if (sortType.equals("score")) {
             List<Record> records = sortRecordsByScoresDesc(result, scoreMap);
