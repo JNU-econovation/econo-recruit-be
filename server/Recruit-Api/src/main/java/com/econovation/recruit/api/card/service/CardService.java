@@ -81,7 +81,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                             if(board.getId()==1 || board.getId()==2 || board.getId()==3) {
                                 return true;
                             }
-                            return Optional.ofNullable(board.getCardId())
+                            return year == null || Optional.ofNullable(board.getCardId())
                                     .map(answerIdByCardIdMap::get)
                                     .map(yearByAnswerIdMap::get)
                                     .map(y -> y.equals(year))
