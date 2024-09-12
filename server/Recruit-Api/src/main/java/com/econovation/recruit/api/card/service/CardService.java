@@ -11,6 +11,7 @@ import com.econovation.recruitcommon.utils.Result;
 import com.econovation.recruitdomain.common.aop.domainEvent.Events;
 import com.econovation.recruitdomain.common.events.WorkCardDeletedEvent;
 import com.econovation.recruitdomain.domains.applicant.adaptor.AnswerAdaptor;
+import com.econovation.recruitdomain.domains.applicant.domain.ApplicantState;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.exception.ApplicantProhibitDeleteException;
@@ -70,6 +71,9 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
         Map<String, Integer> yearByAnswerIdMap = mongoAnswers.stream()
                 .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
 
+        Map<String, ApplicantState> stateByAnswerIdMap = mongoAnswers.stream()
+                .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getApplicantState));
+
         List<Card> cards = cardLoadPort.findAll();
 
         Map<Long, String> answerIdByCardIdMap = cards.stream()
@@ -108,7 +112,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
         for (Board board : boards) {
             if (board.getCardType().equals(CardType.INVISIBLE)) {
-                result.add(BoardCardResponseDto.from(Card.empty(), board, "", "", "", false));
+                result.add(BoardCardResponseDto.from(Card.empty(), board, "", "", "", false, new ApplicantState()));
                 continue;
             }
             Card card = cardByBoardIdMap.get(board.getCardId());
@@ -118,7 +122,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
             if (answers.isEmpty()) {
                 result.add(
                         BoardCardResponseDto.from(
-                                card, board, firstPriority, secondPriority, "", false));
+                                card, board, firstPriority, secondPriority, "", false, new ApplicantState()));
                 continue;
             }
             Map<String, Object> applicantAnswers = answers.get(card.getApplicantId());
@@ -138,9 +142,11 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                                             label.getCardId().equals(card.getId())
                                                     && label.getIdpId().equals(userId));
 
+            ApplicantState state = stateByAnswerIdMap.getOrDefault(card.getApplicantId(), new ApplicantState());
+
             result.add(
                     BoardCardResponseDto.from(
-                            card, board, firstPriority, secondPriority, major, isLabeled));
+                            card, board, firstPriority, secondPriority, major, isLabeled, state));
         }
         return result;
     }
