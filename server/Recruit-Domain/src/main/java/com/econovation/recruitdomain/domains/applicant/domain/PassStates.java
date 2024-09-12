@@ -6,7 +6,7 @@ import lombok.Getter;
 import java.util.Arrays;
 
 @Getter
-public enum PassStates {
+public enum PassStates{
 
     NONPASSED("non-passed"){
         @Override
@@ -43,4 +43,8 @@ public enum PassStates {
                 .orElseThrow(ApplicantWrongStateException::new);
     }
 
+    @Override
+    public String toString() {
+        return this.status;
+    }
 }
