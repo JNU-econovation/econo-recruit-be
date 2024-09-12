@@ -18,6 +18,7 @@ public enum ApplicantErrorCode implements BaseErrorCode {
     APPLICANT_DUPLICATE_SUBMIT(BAD_REQUEST, "APPLICANT_400_1", "이미 지원한 지원자입니다."),
     APPLICANT_PROHIBIT_DELETE(BAD_REQUEST, "APPLICANT_400_2", "지원자를 삭제할 수 없습니다."),
     APPLICANT_WRONG_POSITION(BAD_REQUEST, "APPLICANT_400_3", "디자이너, 개발자, 기획자 중 하나의 포지션을 선택해주세요."),
+    APPLICANT_WRONG_STATE(BAD_REQUEST, "APPLICANT_400_4", "올바른 합/불 상태를 선택해주세요.")
     ;
 
     private Integer status;
