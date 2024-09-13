@@ -1,5 +1,6 @@
 package com.econovation.recruit.api.applicant.aggregate;
 
+import com.econovation.recruit.api.applicant.state.support.PeriodCalculator;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.event.aggregateevent.ApplicantStateUpdateEvent;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ApplicantStateUpdateEventListener {
 
     private final MongoAnswerAdaptor answerAdaptor;
+    private final PeriodCalculator periodCalculator;
 
     @EventHandler
     @Transactional
@@ -24,10 +26,10 @@ public class ApplicantStateUpdateEventListener {
 
         switch (command) {
             case PASS:
-                answer.pass();
+                answer.pass(periodCalculator.execute());
                 break;
             case NON_PASS:
-                answer.nonPass();
+                answer.nonPass(periodCalculator.execute());
                 break;
         }
 

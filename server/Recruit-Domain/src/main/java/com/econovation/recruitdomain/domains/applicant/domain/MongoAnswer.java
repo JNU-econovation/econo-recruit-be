@@ -2,6 +2,9 @@ package com.econovation.recruitdomain.domains.applicant.domain;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
+import com.econovation.recruitdomain.domains.applicant.domain.state.PeriodStates;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,12 +39,12 @@ public class MongoAnswer extends MongoBaseTimeEntity {
     @Field("state")
     private ApplicantState applicantState;
 
-    public void pass(){
-        this.applicantState.nextPassState();
+    public void pass(PeriodStates period){
+        this.applicantState.pass(period);
     }
 
-    public void nonPass(){
-        this.applicantState.prevPassState();
+    public void nonPass(PeriodStates period){
+        this.applicantState.nonPass(period);
     }
 
     public MongoAnswer(String id, Integer year, Map<String, Object> qna) {

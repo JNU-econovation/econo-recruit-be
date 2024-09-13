@@ -1,6 +1,6 @@
 package com.econovation.recruit.api.applicant.state.config;
 
-import com.econovation.recruitdomain.domains.applicant.domain.PassStates;
+import com.econovation.recruitdomain.domains.applicant.domain.state.PassStates;
 import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantStateEvents;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachine;
@@ -17,9 +17,12 @@ public class ApplicantStateMachineConfig extends EnumStateMachineConfigurerAdapt
     public void configure(StateMachineStateConfigurer<PassStates, ApplicantStateEvents> states) throws Exception {
         states
                 .withStates()
-                        .initial(PassStates.NONPASSED)
-                        .state(PassStates.FIRSTPASSED)
-                        .end(PassStates.FINALPASSED);
+                        .initial(PassStates.NON_PROCESSED)
+                        .state(PassStates.FIRST_PASSED)
+                        .end(PassStates.FIRST_FAILED)
+                        .end(PassStates.FINAL_PASSED)
+                        .end(PassStates.FINAL_FAILED);
+
     }
 
     /**
@@ -28,9 +31,11 @@ public class ApplicantStateMachineConfig extends EnumStateMachineConfigurerAdapt
      * @throws Exception
      *
      * States
-         * NONPASSED : 불합격
-         * FIRSTPASSED : 1차 합격
-         * FINALPASSED : 최종 합격
+         * NON_PROCESSED : 불합격
+         * FIRST_PASSED : 1차 합격
+         * FIRST_FAILED : 1차 불합격
+         * FINAL_PASSED : 최종 합격
+         * FINAL_FAILED : 최종 불합격
      *
      * Events
          * NON_PASS : 불합격
@@ -41,12 +46,12 @@ public class ApplicantStateMachineConfig extends EnumStateMachineConfigurerAdapt
     public void configure(StateMachineTransitionConfigurer<PassStates, ApplicantStateEvents> transitions) throws Exception {
         transitions
                 .withExternal()
-                    .source(PassStates.NONPASSED).target(PassStates.FIRSTPASSED).event(ApplicantStateEvents.PASS)
+                    .source(PassStates.NON_PROCESSED).target(PassStates.FIRST_PASSED).event(ApplicantStateEvents.PASS)
                 .and()
                 .withExternal()
-                    .source(PassStates.FIRSTPASSED).target(PassStates.FINALPASSED).event(ApplicantStateEvents.PASS)
+                    .source(PassStates.FIRST_PASSED).target(PassStates.FINAL_PASSED).event(ApplicantStateEvents.PASS)
                 .and()
                 .withExternal()
-                    .source(PassStates.FIRSTPASSED).target(PassStates.NONPASSED).event(ApplicantStateEvents.NON_PASS);
+                    .source(PassStates.FIRST_PASSED).target(PassStates.FINAL_FAILED).event(ApplicantStateEvents.NON_PASS);
     }
 }

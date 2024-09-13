@@ -1,10 +1,9 @@
 package com.econovation.recruit.api.applicant.service;
 
-import com.econovation.recruit.api.applicant.aggregate.ApplicantStateUpdateEventListener;
 import com.econovation.recruit.api.applicant.handler.ApplicantStateUpdateEventHandler;
 import com.econovation.recruit.api.applicant.usecase.ApplicantCommandUseCase;
 import com.econovation.recruitdomain.common.aop.domainEvent.Events;
-import com.econovation.recruitdomain.domains.applicant.domain.ApplicantState;
+import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantRegisterEvent;
