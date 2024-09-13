@@ -1,11 +1,19 @@
 package com.econovation.recruitdomain.domains.card.dto;
 
+import com.econovation.recruitdomain.domains.applicant.domain.ApplicantState;
+import com.econovation.recruitdomain.domains.applicant.domain.PassStates;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.CardType;
 import com.econovation.recruitdomain.domains.card.domain.Card;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @Getter
 @Data
@@ -25,6 +33,7 @@ public class BoardCardResponseDto {
     private String firstPriority;
     private String secondPriority;
     private Boolean isLabeled;
+    private Map<String,String> state;
 
     public static BoardCardResponseDto from(
             Card card,
@@ -32,7 +41,8 @@ public class BoardCardResponseDto {
             String firstPriority,
             String secondPriority,
             String major,
-            Boolean isLabeled) {
+            Boolean isLabeled,
+            ApplicantState state) {
         return BoardCardResponseDto.builder()
                 .boardId(board.getId())
                 .applicantId(card.getApplicantId())
@@ -48,6 +58,13 @@ public class BoardCardResponseDto {
                 .firstPriority(firstPriority)
                 .secondPriority(secondPriority)
                 .isLabeled(isLabeled)
+                .state(toMap(state))
                 .build();
+    }
+
+    private static Map<String, String> toMap(ApplicantState state){
+        Map<String, String> stateMap = new HashMap<>();
+        stateMap.put(PASS_STATE_KEY, state.getPassState());
+        return stateMap;
     }
 }
