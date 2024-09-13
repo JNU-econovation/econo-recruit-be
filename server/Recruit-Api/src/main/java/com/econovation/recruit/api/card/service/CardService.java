@@ -72,7 +72,8 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                 .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
 
         Map<String, ApplicantState> stateByAnswerIdMap = mongoAnswers.stream()
-                .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getApplicantState));
+                .collect(Collectors.toMap(MongoAnswer::getId,
+                                                answer -> answer.getApplicantState()!=null ? answer.getApplicantState() : new ApplicantState()));
 
         List<Card> cards = cardLoadPort.findAll();
 
