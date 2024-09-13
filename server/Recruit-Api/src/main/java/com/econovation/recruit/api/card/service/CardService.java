@@ -11,7 +11,7 @@ import com.econovation.recruitcommon.utils.Result;
 import com.econovation.recruitdomain.common.aop.domainEvent.Events;
 import com.econovation.recruitdomain.common.events.WorkCardDeletedEvent;
 import com.econovation.recruitdomain.domains.applicant.adaptor.AnswerAdaptor;
-import com.econovation.recruitdomain.domains.applicant.domain.ApplicantState;
+import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.exception.ApplicantProhibitDeleteException;

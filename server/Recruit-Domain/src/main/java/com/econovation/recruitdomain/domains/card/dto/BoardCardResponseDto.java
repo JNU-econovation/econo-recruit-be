@@ -1,7 +1,6 @@
 package com.econovation.recruitdomain.domains.card.dto;
 
-import com.econovation.recruitdomain.domains.applicant.domain.ApplicantState;
-import com.econovation.recruitdomain.domains.applicant.domain.PassStates;
+import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.CardType;
 import com.econovation.recruitdomain.domains.card.domain.Card;
@@ -11,7 +10,6 @@ import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
