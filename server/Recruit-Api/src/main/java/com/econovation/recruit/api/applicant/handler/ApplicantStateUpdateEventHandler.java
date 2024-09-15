@@ -37,7 +37,7 @@ public class ApplicantStateUpdateEventHandler {
         }
 
         answerAdaptor.save(answer);
-        return answer.getApplicantState().getPassState();
+        return answer.getApplicantStateOrDefault().getPassState();
     }
 
 }

@@ -48,7 +48,7 @@ public class ApplicantService implements ApplicantQueryUseCase {
     public AnswersResponseDto execute(Integer year, Integer page, String sortType) {
         PageInfo pageInfo = getPageInfo(year, page);
         List<MongoAnswer> result = answerAdaptor.findByYear(year, page);
-        result.forEach(answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantState()));
+        result.forEach(answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantStateOrDefault()));
 
         sortHelper.sort(result, sortType);
         List<Map<String, Object>> sortedResult = result.stream().map(MongoAnswer::getQna).toList();
@@ -107,7 +107,7 @@ public class ApplicantService implements ApplicantQueryUseCase {
     @Override
     public AnswersResponseDto search(Integer page, String searchKeyword) {
         List<MongoAnswer> answers = answerAdaptor.findBySearchKeyword(page, searchKeyword);
-        answers.forEach(answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantState()));
+        answers.forEach(answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantStateOrDefault()));
         return AnswersResponseDto.of(
                 answers.stream().map(MongoAnswer::getQna).toList(),
                 new PageInfo(answers.size(), page));
