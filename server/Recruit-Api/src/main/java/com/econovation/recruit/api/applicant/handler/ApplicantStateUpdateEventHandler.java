@@ -3,17 +3,11 @@ package com.econovation.recruit.api.applicant.handler;
 import com.econovation.recruit.api.applicant.state.support.PeriodCalculator;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
-import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantRegisterEvent;
 import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantStateEvents;
 import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantStateModifyEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
@@ -31,6 +25,8 @@ public class ApplicantStateUpdateEventHandler {
     public String handle(ApplicantStateModifyEvent event){
         MongoAnswer answer = answerAdaptor.findById(event.getApplicantId()).get();
         ApplicantStateEvents command = event.getEvent();
+        boolean result = answer.stateEmptyCheckAndInit();
+        log.error(String.format("validate : %s", (result ? "새로운 state 초기화" : "state 초기화 하지 않고 변경")));
         switch (command) {
             case PASS:
                 answer.pass(periodCalculator.execute());
