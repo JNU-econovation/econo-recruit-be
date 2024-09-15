@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -48,7 +47,7 @@ public class MongoAnswer extends MongoBaseTimeEntity {
         this.applicantState.nonPass(period);
     }
 
-    public boolean stateUpdateValidate(){
+    public boolean stateEmptyCheckAndInit(){
         if(this.applicantState==null) {
             this.applicantState = new ApplicantState();
             return true;
