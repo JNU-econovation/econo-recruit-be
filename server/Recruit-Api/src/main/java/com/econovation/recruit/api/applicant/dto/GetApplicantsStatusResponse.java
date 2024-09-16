@@ -23,20 +23,17 @@ public class GetApplicantsStatusResponse {
     private ApplicantState state;
 
     public static GetApplicantsStatusResponse of(Map<String, Object> result) {
-        ApplicantState state;
         if (result.get(PASS_STATE_KEY) instanceof ApplicantState applicantState) {
-            state = applicantState;
-        } else {
-            throw ApplicantWrongStateException.wrongStatusException;
+            return GetApplicantsStatusResponse.builder()
+                    .field((String) result.get("field"))
+                    .field1((String) result.get("field1"))
+                    .field2((String) result.get("field2"))
+                    .name((String) result.get("name"))
+                    .id((String) result.get("id"))
+                    .year((Integer) result.get("year"))
+                    .state(applicantState)
+                    .build();
         }
-        return GetApplicantsStatusResponse.builder()
-                .field((String) result.get("field"))
-                .field1((String) result.get("field1"))
-                .field2((String) result.get("field2"))
-                .name((String) result.get("name"))
-                .id((String) result.get("id"))
-                .year((Integer) result.get("year"))
-                .state(state)
-                .build();
+        throw ApplicantWrongStateException.wrongStatusException;
     }
 }
