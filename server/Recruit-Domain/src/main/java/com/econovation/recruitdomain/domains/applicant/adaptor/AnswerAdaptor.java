@@ -44,6 +44,13 @@ public class AnswerAdaptor {
         return mongoTemplate.find(query, MongoAnswer.class);
     }
 
+    public List<MongoAnswer> findByYear(Integer year) {
+        Query query =
+                new Query()
+                        .addCriteria(Criteria.where("year").is(year));
+        return mongoTemplate.find(query, MongoAnswer.class);
+    }
+
     public long getTotalCountByYear(Integer year) {
         return mongoTemplate.count(Query.query(Criteria.where("year").is(year)), MongoAnswer.class);
     }
