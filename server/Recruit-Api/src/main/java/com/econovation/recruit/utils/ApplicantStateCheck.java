@@ -35,7 +35,7 @@ public class ApplicantStateCheck implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         try {
-            List<MongoAnswer> answers = answerAdaptor.findAll();
+            List<MongoAnswer> answers = answerAdaptor.findAll().stream().filter(answer -> answer.getApplicantState()==null).toList();
             answers.forEach(MongoAnswer::stateEmptyCheckAndInit);
             answerAdaptor.saveAll(answers);
             log.info("MongoDB Applicant State Check를 완료했습니다.");
