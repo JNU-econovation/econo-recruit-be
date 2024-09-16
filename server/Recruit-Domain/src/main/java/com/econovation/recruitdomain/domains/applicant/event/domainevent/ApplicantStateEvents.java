@@ -22,6 +22,6 @@ public enum ApplicantStateEvents {
         return Arrays.stream(ApplicantStateEvents.values())
                 .filter(e -> e.getEvent().equals(event))
                 .findFirst()
-                .orElseThrow(ApplicantWrongStateException::new);
+                .orElseThrow(()->ApplicantWrongStateException.wrongStatusException);
     }
 }

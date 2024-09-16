@@ -47,6 +47,19 @@ public class MongoAnswer extends MongoBaseTimeEntity {
         this.applicantState.nonPass(period);
     }
 
+    public boolean stateEmptyCheckAndInit(){
+        if(this.applicantState==null) {
+            this.applicantState = new ApplicantState();
+            return true;
+        }
+        return false;
+    }
+    
+    public ApplicantState getApplicantStateOrDefault(){
+        if(this.applicantState==null) return new ApplicantState();
+        return this.applicantState;
+    }
+
     public MongoAnswer(String id, Integer year, Map<String, Object> qna) {
         this.id = id;
         this.year = year;

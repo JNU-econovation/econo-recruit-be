@@ -1,6 +1,7 @@
 package com.econovation.recruit.api.applicant.controller;
 
 import static com.econovation.recruitcommon.consts.RecruitStatic.APPLICANT_SUCCESS_REGISTER_MESSAGE;
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 import com.econovation.recruit.api.applicant.command.CreateAnswerCommand;
 import com.econovation.recruit.api.applicant.docs.CreateApplicantExceptionDocs;
@@ -20,6 +21,7 @@ import com.econovation.recruitinfrastructure.apache.CommonsEmailSender;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -146,10 +148,12 @@ public class ApplicantController {
 
     @Operation(summary = "지원자의 합/불 상태를 변경합니다.")
     @PatchMapping("/applicants/{applicant-id}/state")
-    public ResponseEntity<String> updateStatus(@PathVariable("applicant-id") String applicantId,
+    public ResponseEntity<Map<String, String>> updateStatus(@PathVariable("applicant-id") String applicantId,
                                                @RequestParam("afterState") String afterState){
 //        commandGateway.send(new UpdateApplicantStateCommand(applicantId, afterState));
         String state = applicantCommandUseCase.execute(applicantId, afterState);
-        return new ResponseEntity(state,HttpStatus.OK);
+        Map<String, String> response = new HashMap<>();
+        response.put(PASS_STATE_KEY, state);
+        return new ResponseEntity(response,HttpStatus.OK);
     }
 }

@@ -29,8 +29,22 @@ public class AnswerCommandService implements ApplicantCommandUseCase {
     @Transactional
     public UUID execute(Map<String, Object> qna) {
         UUID id = UUID.randomUUID();
-        ApplicantState nonPassed = new ApplicantState();
-        MongoAnswer answer = MongoAnswer.builder().id(id.toString()).qna(qna).year(year).applicantState(nonPassed).build();
+        execute(qna, id);
+        return id;
+    }
+
+    @Override
+    @Transactional
+    public String execute(String applicantId, String afterState) {
+        ApplicantStateModifyEvent stateModifyEventEvents =
+                ApplicantStateModifyEvent.of(applicantId, afterState);
+        return applicantStateUpdateEventHandler.handle(stateModifyEventEvents); // 동기로 처리
+    }
+
+    @Override
+    public UUID execute(Map<String, Object> qna, UUID id) {
+        ApplicantState nonProcessed = new ApplicantState();
+        MongoAnswer answer = MongoAnswer.builder().id(id.toString()).qna(qna).year(year).applicantState(nonProcessed).build();
         //        학번으로 중복 체크
         //        validateRegisterApplicant(qna);
         answerAdaptor.save(answer);
@@ -42,14 +56,6 @@ public class AnswerCommandService implements ApplicantCommandUseCase {
         ApplicantRegisterEvent applicantRegisterEvent =
                 ApplicantRegisterEvent.of(answer.getId(), name, hopeField, email);
         Events.raise(applicantRegisterEvent);
-        return id;
-    }
-
-    @Override
-    @Transactional
-    public String execute(String applicantId, String afterState) {
-        ApplicantStateModifyEvent stateModifyEventEvents =
-                ApplicantStateModifyEvent.of(applicantId, afterState);
-        return applicantStateUpdateEventHandler.handle(stateModifyEventEvents); // 동기로 처리
+        return null;
     }
 }
