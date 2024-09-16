@@ -25,8 +25,7 @@ public class ApplicantStateUpdateEventHandler {
     public String handle(ApplicantStateModifyEvent event){
         MongoAnswer answer = answerAdaptor.findById(event.getApplicantId()).get();
         ApplicantStateEvents command = event.getEvent();
-        boolean result = answer.stateEmptyCheckAndInit();
-        log.error(String.format("validate : %s", (result ? "새로운 state 초기화" : "state 초기화 하지 않고 변경")));
+        answer.stateEmptyCheckAndInit();
         switch (command) {
             case PASS:
                 answer.pass(periodCalculator.execute());

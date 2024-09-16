@@ -183,12 +183,12 @@ public class ApplicantService implements ApplicantQueryUseCase {
 
     private List<Map<String, Object>> sortAndAddIds(List<MongoAnswer> result, String sortType) {
         sortHelper.sort(result, sortType);
-        List<Map<String, Object>> sortedResult = result.stream().map(MongoAnswer::getQna).toList();
-        sortedResult.forEach(
-                map -> {
-                    map.put("id", result.get(sortedResult.indexOf(map)).getId());
-                    map.put(PASS_STATE_KEY, result.get(sortedResult.indexOf(map)).getApplicantStateOrDefault());
-                });
-        return sortedResult;
+        return result.stream().map(
+                answer -> {
+                    Map<String, Object> qna = answer.getQna();
+                    qna.put("id", answer.getId());
+                    qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
+                    return qna;
+                }).toList();
     }
 }
