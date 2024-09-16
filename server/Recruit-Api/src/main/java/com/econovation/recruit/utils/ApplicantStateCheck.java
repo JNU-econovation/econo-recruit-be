@@ -2,6 +2,8 @@ package com.econovation.recruit.utils;
 
 import com.econovation.recruit.api.applicant.usecase.ApplicantCommandUseCase;
 import com.econovation.recruit.api.applicant.usecase.ApplicantQueryUseCase;
+import com.econovation.recruitdomain.domains.applicant.adaptor.AnswerAdaptor;
+import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import io.vavr.concurrent.Future;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApplicantStateCheck implements ApplicationRunner {
 
-    private final ApplicantCommandUseCase applicantCommandUseCase;
-    private final ApplicantQueryUseCase applicantQueryUseCase;
+    private final AnswerAdaptor answerAdaptor;
 
     @PostConstruct
     public void init() throws IOException, SQLException {
@@ -33,32 +34,14 @@ public class ApplicantStateCheck implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        List<Map<String, Object>> answers = applicantQueryUseCase.execute();
-        Future.of(() -> answers)
-                .map(
-                        answer -> {
-                            return answer.stream()
-                                    .map(
-                                            map -> {
-                                                Map<String, Object> qna =
-                                                        map.entrySet().stream()
-                                                                .collect(
-                                                                        Collectors.toMap(
-                                                                                Map.Entry::getKey,
-                                                                                Map.Entry::getValue));
-                                                applicantCommandUseCase.execute(qna, UUID.fromString((String)qna.get("id")));
-                                                return qna;
-                                            })
-                                    .collect(Collectors.toList());
-                        })
-                .onSuccess(
-                        (qna) -> {
-                            log.info("MongoDB Applicant State Check를 완료했습니다.");
-                        })
-                .onFailure(
-                        (exception) -> {
-                            exception.printStackTrace();
-                            log.error("MongoDB Applicant State Check를 실패했습니다.");
-                        });
+        try {
+            List<MongoAnswer> answers = answerAdaptor.findAll();
+            answers.forEach(MongoAnswer::stateEmptyCheckAndInit);
+            answerAdaptor.saveAll(answers);
+            log.info("MongoDB Applicant State Check를 완료했습니다.");
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("MongoDB Applicant State Check를 실패했습니다.");
+        }
     }
 }
