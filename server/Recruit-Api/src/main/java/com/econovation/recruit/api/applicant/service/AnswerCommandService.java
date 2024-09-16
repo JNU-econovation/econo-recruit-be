@@ -43,8 +43,8 @@ public class AnswerCommandService implements ApplicantCommandUseCase {
 
     @Override
     public UUID execute(Map<String, Object> qna, UUID id) {
-        ApplicantState nonPassed = new ApplicantState();
-        MongoAnswer answer = MongoAnswer.builder().id(id.toString()).qna(qna).year(year).applicantState(nonPassed).build();
+        ApplicantState nonProcessed = new ApplicantState();
+        MongoAnswer answer = MongoAnswer.builder().id(id.toString()).qna(qna).year(year).applicantState(nonProcessed).build();
         //        학번으로 중복 체크
         //        validateRegisterApplicant(qna);
         answerAdaptor.save(answer);
