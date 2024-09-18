@@ -82,8 +82,9 @@ public class ApplicantController {
     public ResponseEntity<AnswersResponseDto> getApplicantsByYear(
             @PathVariable(value = "year") Integer year,
             @PathVariable(value = "page") Integer page,
-            @ParameterObject String order) {
-        AnswersResponseDto result = applicantQueryUseCase.execute(year, page, order);
+            @ParameterObject String order,
+            @ParameterObject String searchKeyword) {
+        AnswersResponseDto result = applicantQueryUseCase.execute(year, page, order, searchKeyword);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 

@@ -46,6 +46,29 @@ public class ApplicantService implements ApplicantQueryUseCase {
     }
 
     @Transactional(readOnly = true)
+    public AnswersResponseDto execute(Integer year, Integer page, String sortType, String searchKeyword) {
+        PageInfo pageInfo = getPageInfo(year, searchKeyword, page);
+        List<MongoAnswer> sortedResult = answerAdaptor.findByYearAndSearchKeyword(year, page, sortType, searchKeyword);
+
+        List<Map<String, Object>> qnaMapList = sortedResult.stream().map(answer -> {
+            Map<String, Object> qna = answer.getQna();
+            qna.put("id", answer.getId());
+            qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
+            return qna;
+        }).toList();
+
+        if (qnaMapList.isEmpty()) {
+            return AnswersResponseDto.of(Collections.emptyList(), pageInfo);
+        }
+        return AnswersResponseDto.of(qnaMapList, pageInfo);
+    }
+
+    private PageInfo getPageInfo(Integer year, String searchKeyword, Integer page) {
+        long totalCount = answerAdaptor.getTotalCountByYearAndSearchKeyword(year, searchKeyword);
+        return new PageInfo(totalCount, page);
+    }
+
+    @Transactional(readOnly = true)
     public AnswersResponseDto execute(Integer year, Integer page, String sortType) {
         PageInfo pageInfo = getPageInfo(year, page);
         List<MongoAnswer> result = answerAdaptor.findByYear(year, page);
