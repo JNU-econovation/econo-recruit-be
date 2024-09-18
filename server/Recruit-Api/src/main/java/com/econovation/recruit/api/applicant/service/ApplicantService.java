@@ -209,7 +209,9 @@ public class ApplicantService implements ApplicantQueryUseCase {
     }
 
     private List<Map<String, Object>> sortAndAddIds(List<MongoAnswer> result, String sortType) {
-        sortHelper.sort(result, sortType);
+        if (!result.isEmpty()) {
+            sortHelper.sort(result, sortType);
+        }
         return getQnaMapListWithIdAndPassState(result);
     }
 }

@@ -117,7 +117,9 @@ public class RecordService implements RecordUseCase {
     private List<Record> sortRecordsByApplicantsAndSortType(
             List<Record> records, List<MongoAnswer> applicants, String sortType) {
         // Newest, Name, Object 정렬
-        sortHelper.sort(applicants, sortType);
+        if (!applicants.isEmpty()) {
+            sortHelper.sort(applicants, sortType);
+        }
         Map<String, Integer> applicantIndexMap = new HashMap<>();
         for (int i = 0; i < applicants.size(); i++) {
             applicantIndexMap.put(applicants.get(i).getId(), i);

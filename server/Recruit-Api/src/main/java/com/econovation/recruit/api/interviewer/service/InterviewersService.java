@@ -67,7 +67,9 @@ public class InterviewersService implements InterviewerUseCase {
     @Override
     public List<InterviewerResponseDto> findAll(String sortType) {
         List<Interviewer> interviewers = interviewerLoadPort.findAll();
-        interviewerSortHelper.sort(interviewers, sortType);
+        if (!interviewers.isEmpty()) {
+            interviewerSortHelper.sort(interviewers, sortType);
+        }
         return interviewers.stream().map(InterviewerResponseDto::from).toList();
     }
 
