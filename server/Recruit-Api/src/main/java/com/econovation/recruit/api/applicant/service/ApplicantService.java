@@ -50,17 +50,21 @@ public class ApplicantService implements ApplicantQueryUseCase {
         PageInfo pageInfo = getPageInfo(year, searchKeyword, page);
         List<MongoAnswer> sortedResult = answerAdaptor.findByYearAndSearchKeyword(year, page, sortType, searchKeyword);
 
-        List<Map<String, Object>> qnaMapList = sortedResult.stream().map(answer -> {
-            Map<String, Object> qna = answer.getQna();
-            qna.put("id", answer.getId());
-            qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
-            return qna;
-        }).toList();
+        List<Map<String, Object>> qnaMapList = getQnaMapListWithIdAndPassState(sortedResult);
 
         if (qnaMapList.isEmpty()) {
             return AnswersResponseDto.of(Collections.emptyList(), pageInfo);
         }
         return AnswersResponseDto.of(qnaMapList, pageInfo);
+    }
+
+    private List<Map<String, Object>> getQnaMapListWithIdAndPassState(List<MongoAnswer> sortedResult) {
+        return sortedResult.stream().map(answer -> {
+            Map<String, Object> qna = answer.getQna();
+            qna.put("id", answer.getId());
+            qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
+            return qna;
+        }).toList();
     }
 
     private PageInfo getPageInfo(Integer year, String searchKeyword, Integer page) {
@@ -206,12 +210,6 @@ public class ApplicantService implements ApplicantQueryUseCase {
 
     private List<Map<String, Object>> sortAndAddIds(List<MongoAnswer> result, String sortType) {
         sortHelper.sort(result, sortType);
-        return result.stream().map(
-                answer -> {
-                    Map<String, Object> qna = answer.getQna();
-                    qna.put("id", answer.getId());
-                    qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
-                    return qna;
-                }).toList();
+        return getQnaMapListWithIdAndPassState(result);
     }
 }
