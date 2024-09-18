@@ -35,7 +35,7 @@ public class RecruitStatic {
     public static Set<String> CRETERIA_SET =
             new HashSet<>(Arrays.asList("열정/실천력", "동아리 애착", "협업", "태도"));
 
-    public static final String PASS_STATE_KEY = "passState";
+    public static final String PASS_STATE_KEY = "state";
 
     public static final String APPLICANT_SUCCESS_REGISTER_MESSAGE = "성공적으로 지원됐습니다";
     public static final String NO_MATCH_INTERVIEWER_MESSAGE = "해당하는 면접관이 없습니다.";
