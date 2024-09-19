@@ -6,6 +6,8 @@ import com.econovation.recruitcommon.annotation.Adaptor;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerRepository;
 import java.util.List;
+
+import com.econovation.recruitdomain.domains.applicant.exception.ApplicantNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +44,17 @@ public class AnswerAdaptor {
                         .skip((page - 1) * 10L) // offset 설정
                         .limit(PAGE_SIZE); // 페이지 크기 설정
         return mongoTemplate.find(query, MongoAnswer.class);
+    }
+
+    public List<MongoAnswer> findByYear(Integer year) {
+        Query query =
+                new Query()
+                        .addCriteria(Criteria.where("year").is(year));
+        List<MongoAnswer> result =  mongoTemplate.find(query, MongoAnswer.class);
+        if(result.isEmpty()) {
+            throw ApplicantNotFoundException.EXCEPTION;
+        }
+        return result;
     }
 
     public long getTotalCountByYear(Integer year) {

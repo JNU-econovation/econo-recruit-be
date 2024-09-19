@@ -31,16 +31,10 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @SecurityRequirement(name = "access-token")
 @RestController
@@ -168,8 +162,9 @@ public class BoardRestController {
             description = "navigationId에 해당하는 모든 칸반을 조회합니다.")
     @GetMapping("/navigations/{navigation-id}/boards")
     public ResponseEntity<List<BoardCardResponseDto>> getBoardByNavigationId(
-            @PathVariable("navigation-id") Integer navigationId) {
-        return new ResponseEntity<>(cardLoadUseCase.getByNavigationId(navigationId), HttpStatus.OK);
+            @PathVariable("navigation-id") Integer navigationId,
+            @ParameterObject Integer year) {
+        return new ResponseEntity<>(cardLoadUseCase.getByNavigationId(navigationId, year), HttpStatus.OK);
     }
 
     @Operation(summary = "지원서 조회(원하는 field) 만 조회", description = "원하는 field만(리스트) 조회합니다.")

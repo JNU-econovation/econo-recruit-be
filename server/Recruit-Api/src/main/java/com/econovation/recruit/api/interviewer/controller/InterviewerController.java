@@ -38,7 +38,7 @@ public class InterviewerController {
     @Operation(description = "Interviewer 전체 조회", summary = "면접관 전체 조회")
     @ApiErrorExceptionsExample(InterviewerExceptionDocs.class)
     @GetMapping("/interviewers")
-    public ResponseEntity<List<InterviewerResponseDto>> findAll(@ParameterObject String order) {
+    public ResponseEntity<List<InterviewerResponseDto>> findAll(@ParameterObject String order, @RequestParam(required = false) List<String> roles) {
         List<InterviewerResponseDto> interviewers = interviewerUseCase.findAll(order);
         return new ResponseEntity(interviewers, HttpStatus.OK);
     }

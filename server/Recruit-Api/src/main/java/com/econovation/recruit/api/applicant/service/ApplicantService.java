@@ -2,6 +2,7 @@ package com.econovation.recruit.api.applicant.service;
 
 import com.econovation.recruit.api.applicant.aggregate.AnswerAggregate;
 import com.econovation.recruit.api.applicant.dto.AnswersResponseDto;
+import com.econovation.recruit.api.applicant.dto.GetApplicantsStatusResponse;
 import com.econovation.recruit.api.applicant.query.AnswerQuery;
 import com.econovation.recruit.api.applicant.usecase.ApplicantQueryUseCase;
 import com.econovation.recruit.utils.sort.SortHelper;
@@ -18,6 +19,8 @@ import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @Service
 @RequiredArgsConstructor
@@ -46,15 +49,7 @@ public class ApplicantService implements ApplicantQueryUseCase {
     public AnswersResponseDto execute(Integer year, Integer page, String sortType) {
         PageInfo pageInfo = getPageInfo(year, page);
         List<MongoAnswer> result = answerAdaptor.findByYear(year, page);
-
-        sortHelper.sort(result, sortType);
-        List<Map<String, Object>> sortedResult = result.stream().map(MongoAnswer::getQna).toList();
-        // answer id를 각 map에 추가
-        sortedResult.forEach(
-                map -> {
-                    map.put("id", result.get(sortedResult.indexOf(map)).getId());
-                });
-
+        List<Map<String, Object>> sortedResult = sortAndAddIds(result, sortType);
         if (sortedResult.isEmpty()) {
             return AnswersResponseDto.of(Collections.emptyList(), pageInfo);
         }
@@ -104,6 +99,7 @@ public class ApplicantService implements ApplicantQueryUseCase {
     @Override
     public AnswersResponseDto search(Integer page, String searchKeyword) {
         List<MongoAnswer> answers = answerAdaptor.findBySearchKeyword(page, searchKeyword);
+        answers.forEach(answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantStateOrDefault()));
         return AnswersResponseDto.of(
                 answers.stream().map(MongoAnswer::getQna).toList(),
                 new PageInfo(answers.size(), page));
@@ -176,5 +172,23 @@ public class ApplicantService implements ApplicantQueryUseCase {
     public List<Map<String, Object>> execute(List<String> fields, Integer page) {
         List<MongoAnswer> byYear = answerAdaptor.findByYear(year, page);
         return splitByAnswers(fields, byYear);
+    }
+
+    @Override
+    public List<GetApplicantsStatusResponse> getApplicantsStatus(Integer year, String sortType) {
+        List<MongoAnswer> result = answerAdaptor.findByYear(year);
+        List<Map<String, Object>> sortedResult = sortAndAddIds(result, sortType);
+        return sortedResult.stream().map(GetApplicantsStatusResponse::of).toList();
+    }
+
+    private List<Map<String, Object>> sortAndAddIds(List<MongoAnswer> result, String sortType) {
+        sortHelper.sort(result, sortType);
+        return result.stream().map(
+                answer -> {
+                    Map<String, Object> qna = answer.getQna();
+                    qna.put("id", answer.getId());
+                    qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
+                    return qna;
+                }).toList();
     }
 }

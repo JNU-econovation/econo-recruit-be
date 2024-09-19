@@ -76,7 +76,9 @@ public class SecurityConfig {
                 // ( jwt 필터나 , basic auth 필터의 순서는 상관이없다.) --> 왜냐면 jwt는 토큰 여부 파악만하고 있으면 검증이고 없으면 넘김.
                 // 내부 소스까지 실행을 못함. 권한 문제 때문에.
                 .mvcMatchers(HttpMethod.DELETE, "/api/v1//interviewers/*")
-                .hasAnyRole("OPERATION", "PRESIDENT")
+                .hasAnyRole("ROLE_OPERATION", "ROLE_PRESIDENT")
+                .mvcMatchers(HttpMethod.PATCH, "/api/v1/applicants/{applicant-id}/status")
+                .hasAnyRole("ROLE_OPERATION", "ROLE_PRESIDENT")
                 .anyRequest()
                 .hasAnyRole(RolePattern);
 

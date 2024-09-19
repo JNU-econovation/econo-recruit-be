@@ -20,6 +20,7 @@ public class CorsConfig implements WebMvcConfigurer {
         if (!springEnvironmentHelper.isProdProfile()) {
             allowedOriginPatterns.add("http://localhost:3000");
             allowedOriginPatterns.add("http://localhost:6379");
+            allowedOriginPatterns.add("http://211.188.51.50");
         }
         String[] patterns = allowedOriginPatterns.toArray(String[]::new);
         registry.addMapping("/**")

@@ -10,7 +10,7 @@ import java.util.List;
 public interface CardLoadUseCase {
     List<Card> findAll();
 
-    List<BoardCardResponseDto> getByNavigationId(Integer navigationId);
+    List<BoardCardResponseDto> getByNavigationId(Integer navigationId, Integer year);
 
     CardResponseDto findCardById(Long cardId);
 }

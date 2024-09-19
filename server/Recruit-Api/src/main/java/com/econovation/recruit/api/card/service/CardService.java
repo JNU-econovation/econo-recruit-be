@@ -10,6 +10,10 @@ import com.econovation.recruit.api.config.security.SecurityUtils;
 import com.econovation.recruitcommon.utils.Result;
 import com.econovation.recruitdomain.common.aop.domainEvent.Events;
 import com.econovation.recruitdomain.common.events.WorkCardDeletedEvent;
+import com.econovation.recruitdomain.domains.applicant.adaptor.AnswerAdaptor;
+import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
+import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
+import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.exception.ApplicantProhibitDeleteException;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.CardType;
@@ -26,6 +30,7 @@ import com.econovation.recruitdomain.out.LabelLoadPort;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +46,8 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
     private final ColumnsUseCase columnsUseCase;
     private final ApplicantQueryUseCase applicantQueryUseCase;
     private final LabelLoadPort labelLoadPort;
+    private final AnswerAdaptor answerAdaptor;
+    private final MongoAnswerAdaptor mongoAnswerAdaptor;
 
     @Override
     @Transactional(readOnly = true)
@@ -50,7 +57,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional(readOnly = true)
-    public List<BoardCardResponseDto> getByNavigationId(Integer navigationId) {
+    public List<BoardCardResponseDto> getByNavigationId(Integer navigationId, Integer year) {
         Long userId = SecurityUtils.getCurrentUserId();
         List<Columns> columns = columnsUseCase.getByNavigationId(navigationId);
 
@@ -58,7 +65,36 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                 columns.stream().map(Columns::getId).collect(Collectors.toList());
 
         List<Board> boards = boardLoadUseCase.getBoardByColumnsIds(columnsIds);
-        List<Card> cards =
+
+        List<MongoAnswer> mongoAnswers = answerAdaptor.findAll();
+
+        Map<String, Integer> yearByAnswerIdMap = mongoAnswers.stream()
+                .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
+
+        Map<String, ApplicantState> stateByAnswerIdMap = mongoAnswers.stream()
+                .collect(Collectors.toMap(MongoAnswer::getId,
+                                                MongoAnswer::getApplicantStateOrDefault));
+
+        List<Card> cards = cardLoadPort.findAll();
+
+        Map<Long, String> answerIdByCardIdMap = cards.stream()
+                .collect(Collectors.toMap(Card::getId, Card::getApplicantId));
+
+        boards = boards.stream()
+                .filter(
+                        board ->{
+                            if(board.getCardType().equals(CardType.INVISIBLE)) {
+                                return true;
+                            }
+                            return year == null || Optional.ofNullable(board.getCardId())
+                                    .map(answerIdByCardIdMap::get)
+                                    .map(yearByAnswerIdMap::get)
+                                    .map(y -> y.equals(year))
+                                    .orElse(false);
+                        })
+                .toList();
+
+        cards =
                 cardLoadPort.findByIdIn(
                         boards.stream().map(Board::getCardId).collect(Collectors.toList()));
 
@@ -77,7 +113,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
         for (Board board : boards) {
             if (board.getCardType().equals(CardType.INVISIBLE)) {
-                result.add(BoardCardResponseDto.from(Card.empty(), board, "", "", "", false));
+                result.add(BoardCardResponseDto.from(Card.empty(), board, "", "", "", false, new ApplicantState()));
                 continue;
             }
             Card card = cardByBoardIdMap.get(board.getCardId());
@@ -87,7 +123,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
             if (answers.isEmpty()) {
                 result.add(
                         BoardCardResponseDto.from(
-                                card, board, firstPriority, secondPriority, "", false));
+                                card, board, firstPriority, secondPriority, "", false, new ApplicantState()));
                 continue;
             }
             Map<String, Object> applicantAnswers = answers.get(card.getApplicantId());
@@ -107,9 +143,11 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
                                             label.getCardId().equals(card.getId())
                                                     && label.getIdpId().equals(userId));
 
+            ApplicantState state = stateByAnswerIdMap.getOrDefault(card.getApplicantId(), new ApplicantState());
+
             result.add(
                     BoardCardResponseDto.from(
-                            card, board, firstPriority, secondPriority, major, isLabeled));
+                            card, board, firstPriority, secondPriority, major, isLabeled, state));
         }
         return result;
     }

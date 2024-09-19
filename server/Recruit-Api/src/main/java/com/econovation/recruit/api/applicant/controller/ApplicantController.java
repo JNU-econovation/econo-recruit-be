@@ -1,10 +1,10 @@
 package com.econovation.recruit.api.applicant.controller;
 
-import static com.econovation.recruitcommon.consts.RecruitStatic.APPLICANT_SUCCESS_REGISTER_MESSAGE;
-
 import com.econovation.recruit.api.applicant.command.CreateAnswerCommand;
 import com.econovation.recruit.api.applicant.docs.CreateApplicantExceptionDocs;
 import com.econovation.recruit.api.applicant.dto.AnswersResponseDto;
+import com.econovation.recruit.api.applicant.dto.GetApplicantsStatusResponse;
+import com.econovation.recruit.api.applicant.usecase.ApplicantCommandUseCase;
 import com.econovation.recruit.api.applicant.usecase.ApplicantQueryUseCase;
 import com.econovation.recruit.api.applicant.usecase.TimeTableLoadUseCase;
 import com.econovation.recruit.api.applicant.usecase.TimeTableRegisterUseCase;
@@ -18,10 +18,6 @@ import com.econovation.recruitdomain.domains.timetable.domain.TimeTable;
 import com.econovation.recruitinfrastructure.apache.CommonsEmailSender;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -29,12 +25,16 @@ import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static com.econovation.recruitcommon.consts.RecruitStatic.APPLICANT_SUCCESS_REGISTER_MESSAGE;
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -49,6 +49,7 @@ public class ApplicantController {
     private final CommonsEmailSender commonsEmailSender;
     private final CommandGateway commandGateway;
     private final ApplicantValidator applicantValidator;
+    private final ApplicantCommandUseCase applicantCommandUseCase;
 
     @Value("${econovation.year}")
     private Integer year;
@@ -145,5 +146,24 @@ public class ApplicantController {
         commonsEmailSender.send(
                 emailSendDto.getEmail(), emailSendDto.getApplicantId(), LocalDateTime.now());
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "지원자의 합/불 상태를 변경합니다.")
+    @PatchMapping("/applicants/{applicant-id}/state")
+    public ResponseEntity<Map<String, String>> updateStatus(@PathVariable("applicant-id") String applicantId,
+                                               @RequestParam("afterState") String afterState){
+//        commandGateway.send(new UpdateApplicantStateCommand(applicantId, afterState));
+        String state = applicantCommandUseCase.execute(applicantId, afterState);
+        Map<String, String> response = new HashMap<>();
+        response.put(PASS_STATE_KEY, state);
+        return new ResponseEntity(response,HttpStatus.OK);
+    }
+
+    @Operation(summary = "지원서의 합/불 상태를 조회합니다. (합/불 관리자 페이지 전용)")
+    @GetMapping("year/{year}/applicants/pass-state")
+    public ResponseEntity<List<GetApplicantsStatusResponse>> getApplicantsStatus(@PathVariable("year") Integer year,
+                                                                           @RequestParam("order") String sortType) {
+        List<GetApplicantsStatusResponse> result = applicantQueryUseCase.getApplicantsStatus(year, sortType);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }
