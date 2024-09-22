@@ -72,6 +72,12 @@ public class ApplicantService implements ApplicantQueryUseCase {
         return new PageInfo(totalCount, page);
     }
 
+    @Override
+    public PageInfo getPageInfo(Integer page, Integer year, String searchKeyword, List<String> applicantIds) {
+        long totalCount = answerAdaptor.getTotalCountByYearAndSearchKeywordAndApplicantIds(year, searchKeyword, applicantIds);
+        return new PageInfo(totalCount, page);
+    }
+
     @Transactional(readOnly = true)
     public List<MongoAnswer> execute(Integer page, Integer year, String sortType, String searchKeyword, List<String> applicantIds) {
         return answerAdaptor.findByYearAndSearchKeywordAndApplicantIds(page, year, sortType, searchKeyword, applicantIds);
