@@ -85,12 +85,16 @@ public class AnswerAdaptor {
 
         setSortType(query, sortType);
 
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
+
+        return mongoTemplate.find(query, MongoAnswer.class);
+    }
+
+    private void addCriteriaIfSearchKeywordExists(String searchKeyword, Query query) {
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
             TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingAny(searchKeyword);
             query.addCriteria(criteria);
         }
-
-        return mongoTemplate.find(query, MongoAnswer.class);
     }
 
     private void setSortType(Query query, String sortType) {
@@ -105,10 +109,33 @@ public class AnswerAdaptor {
         Query query = new Query()
                 .addCriteria(Criteria.where("year").is(year));
 
-        if (searchKeyword != null && !searchKeyword.isEmpty()) {
-            TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingAny(searchKeyword);
-            query.addCriteria(criteria);
-        }
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
+
+        return mongoTemplate.count(query, MongoAnswer.class);
+    }
+
+    public List<MongoAnswer> findByYearAndSearchKeywordAndApplicantIds(Integer page, Integer year, String sortType, String searchKeyword,
+            List<String> applicantIds) {
+
+        Query query = new Query()
+                .addCriteria(Criteria.where("year").is(year))
+                .addCriteria(Criteria.where("id").in(applicantIds))
+                .skip((page - 1) * 10L)
+                .limit(PAGE_SIZE);
+
+        setSortType(query, sortType);
+
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
+
+        return mongoTemplate.find(query, MongoAnswer.class);
+    }
+
+    public long getTotalCountByYearAndSearchKeywordAndApplicantIds(Integer year, String searchKeyword, List<String> applicantIds) {
+        Query query = new Query()
+                .addCriteria(Criteria.where("year").is(year))
+                .addCriteria(Criteria.where("id").in(applicantIds));
+
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
 
         return mongoTemplate.count(query, MongoAnswer.class);
     }
