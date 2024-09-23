@@ -76,7 +76,7 @@ public class RecordService implements RecordUseCase {
                         .toList();
 
         if (result.isEmpty() || applicants.isEmpty()) {
-            return createEmptyResponse(pageInfo);
+            return RecordsViewResponseDto.empty(pageInfo);
         }
 
         Map<String, Integer> yearByAnswerIdMap =
@@ -126,7 +126,7 @@ public class RecordService implements RecordUseCase {
         }
 
         if (result.isEmpty() || applicants.isEmpty()) {
-            return createEmptyResponse(new PageInfo(0, page));
+            return RecordsViewResponseDto.empty(new PageInfo(0, page));
         }
 
         Map<String, Integer> yearByAnswerIdMap =
@@ -157,11 +157,6 @@ public class RecordService implements RecordUseCase {
 
         PageInfo pageInfo = applicantQueryUseCase.getPageInfo(year, page, searchKeyword);
         return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
-    }
-
-    private RecordsViewResponseDto createEmptyResponse(PageInfo pageInfo) {
-        return RecordsViewResponseDto.of(
-                pageInfo, Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
     }
 
     private Map<String, Double> getScoreMap(
