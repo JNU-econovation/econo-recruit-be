@@ -1,5 +1,7 @@
 package com.econovation.recruit.api.record.service;
 
+import static com.econovation.recruit.utils.sort.SortHelper.paginateList;
+
 import com.econovation.recruit.api.applicant.usecase.ApplicantQueryUseCase;
 import com.econovation.recruit.api.record.dto.RecordsViewResponseDto;
 import com.econovation.recruit.api.record.usecase.RecordUseCase;
@@ -100,17 +102,22 @@ public class RecordService implements RecordUseCase {
     @Override
     public RecordsViewResponseDto execute(Integer page, Integer year, String sortType, String searchKeyword) {
         List<Record> result = recordLoadPort.findAll();
-
         List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
-        List<MongoAnswer> applicants = applicantQueryUseCase.execute(page, year, sortType, searchKeyword, applicantIds);
 
-        PageInfo pageInfo = applicantQueryUseCase.getPageInfo(page, year, searchKeyword, applicantIds);
+        List<MongoAnswer> applicants;
+        if (sortType.equals("score")) {
+            applicants = applicantQueryUseCase.execute(year, sortType, searchKeyword, applicantIds);
+        } else {
+            applicants = applicantQueryUseCase.execute(page, year, sortType, searchKeyword, applicantIds);
+        }
 
         if (result.isEmpty() || applicants.isEmpty()) {
-            return createEmptyResponse(pageInfo);
+            return createEmptyResponse(new PageInfo(0, page));
         }
 
         Map<String, Integer> yearByAnswerIdMap = applicants.stream().collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
+
+        applicantIds = applicants.stream().map(MongoAnswer::getId).toList();    // 검색 결과에 따라 applicantIds 재할당
         Map<String, Double> scoreMap = getScoreMap(year, applicantIds, yearByAnswerIdMap);
 
         result = result.stream().filter(record -> year == null ||
@@ -121,15 +128,14 @@ public class RecordService implements RecordUseCase {
                 )
                 .toList();
 
-        applicants = new ArrayList<>(applicants); // Unmodifiable List일 경우 Sort 불가. stream().toList()의 결과는 Unmodifiable List
-
         List<Record> records;
         if (sortType.equals("score")) {
-            records = sortRecordsByScoresDesc(result, scoreMap);
+            records = sortRecordsByScoresDesc(result, scoreMap, page);
         } else {
             records = sortRecordsByApplicantsAndSortType(result, applicants);
         }
 
+        PageInfo pageInfo = applicantQueryUseCase.getPageInfo(page, year, searchKeyword, applicantIds);
         return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
     }
 
@@ -154,7 +160,7 @@ public class RecordService implements RecordUseCase {
     private List<Record> sortRecordsByScoresDesc(
             List<Record> records, Map<String, Double> scoreMap) {
         // score 내림차순 정렬
-        return records.stream()
+        List<Record> sortedRecords = records.stream()
                 .sorted(
                         Comparator.comparing(
                                 record -> {
@@ -162,6 +168,22 @@ public class RecordService implements RecordUseCase {
                                     return score == null ? 0 : score;
                                 }))
                 .toList();
+        return sortedRecords;
+    }
+
+    private List<Record> sortRecordsByScoresDesc(
+            List<Record> records, Map<String, Double> scoreMap, Integer page) {
+        // score 내림차순 정렬
+        List<Record> sortedRecords = records.stream()
+                .sorted(
+                        Comparator.comparing(
+                                record -> scoreMap.getOrDefault(record.getApplicantId(), 0.0),
+                                Comparator.reverseOrder()
+                        )
+                )
+                .toList();
+        // 페이징 함수 호출
+        return paginateList(sortedRecords, page);
     }
 
     private List<Record> sortRecordsByApplicantsAndSortType(
