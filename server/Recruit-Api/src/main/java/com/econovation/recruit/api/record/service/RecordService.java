@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -85,15 +86,7 @@ public class RecordService implements RecordUseCase {
         Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, applicantIds, yearByAnswerIdMap);
 
         result =
-                result.stream()
-                        .filter(
-                                record ->
-                                        year == null
-                                                || Optional.ofNullable(record.getApplicantId())
-                                                        .map(yearByAnswerIdMap::get)
-                                                        .map(y -> y.equals(year))
-                                                        .orElse(false))
-                        .toList();
+                filterRecordsByYear(result, year, yearByAnswerIdMap);
 
         applicants =
                 new ArrayList<>(
@@ -144,15 +137,7 @@ public class RecordService implements RecordUseCase {
                         .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
 
         List<Record> filteredRecords =
-                records.stream()
-                        .filter(
-                                record ->
-                                        year == null
-                                                || Optional.ofNullable(record.getApplicantId())
-                                                .map(yearByAnswerIdMap::get)
-                                                .map(y -> y.equals(year))
-                                                .orElse(false))
-                        .toList();
+                filterRecordsByYear(records, year, yearByAnswerIdMap);
 
         List<String> filteredApplicantIds =
                 applicants.stream().map(MongoAnswer::getId).toList(); // 검색 결과에 따라 applicantIds 재할당
@@ -160,6 +145,18 @@ public class RecordService implements RecordUseCase {
         Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, filteredApplicantIds, yearByAnswerIdMap);
 
         return new FilteredRecordsWithScoresDto(filteredRecords, scoreMap);
+    }
+
+    private List<Record> filterRecordsByYear(List<Record> records, Integer year, Map<String, Integer> yearByAnswerIdMap) {
+        return records.stream()
+                .filter(
+                        record ->
+                                year == null
+                                        || Optional.ofNullable(record.getApplicantId())
+                                        .map(yearByAnswerIdMap::get)
+                                        .map(y -> y.equals(year))
+                                        .orElse(false))
+                .toList();
     }
 
     private Map<String, Double> calculateAverageScoresByApplicant(
