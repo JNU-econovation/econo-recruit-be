@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,10 +82,10 @@ public class RecordService implements RecordUseCase {
         Map<String, Integer> yearByAnswerIdMap =
                 applicants.stream()
                         .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
-        Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, applicantIds, yearByAnswerIdMap);
+        Map<String, Double> scoreMap =
+                calculateAverageScoresByApplicant(year, applicantIds, yearByAnswerIdMap);
 
-        result =
-                filterRecordsByYear(result, year, yearByAnswerIdMap);
+        result = filterRecordsByYear(result, year, yearByAnswerIdMap);
 
         applicants =
                 new ArrayList<>(
@@ -116,9 +115,12 @@ public class RecordService implements RecordUseCase {
         if (sortType.equals("score")) {
             applicants = applicantQueryUseCase.execute(year, sortType, searchKeyword, applicantIds);
             filteredData = filterRecordsAndCalculateScores(result, applicants, year, page);
-            records = sortRecordsByScoresDesc(filteredData.records(), filteredData.scoreMap(), page);
+            records =
+                    sortRecordsByScoresDesc(filteredData.records(), filteredData.scoreMap(), page);
         } else {
-            applicants = applicantQueryUseCase.execute(page, year, sortType, searchKeyword, applicantIds);
+            applicants =
+                    applicantQueryUseCase.execute(
+                            page, year, sortType, searchKeyword, applicantIds);
             filteredData = filterRecordsAndCalculateScores(result, applicants, year, page);
             records = sortRecordsByApplicantsAndSortType(filteredData.records(), applicants);
         }
@@ -131,31 +133,33 @@ public class RecordService implements RecordUseCase {
         return RecordsViewResponseDto.of(pageInfo, records, filteredData.scoreMap(), applicants);
     }
 
-    private FilteredRecordsWithScoresDto filterRecordsAndCalculateScores(List<Record> records, List<MongoAnswer> applicants, Integer year, Integer page) {
+    private FilteredRecordsWithScoresDto filterRecordsAndCalculateScores(
+            List<Record> records, List<MongoAnswer> applicants, Integer year, Integer page) {
         Map<String, Integer> yearByAnswerIdMap =
                 applicants.stream()
                         .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
 
-        List<Record> filteredRecords =
-                filterRecordsByYear(records, year, yearByAnswerIdMap);
+        List<Record> filteredRecords = filterRecordsByYear(records, year, yearByAnswerIdMap);
 
         List<String> filteredApplicantIds =
                 applicants.stream().map(MongoAnswer::getId).toList(); // 검색 결과에 따라 applicantIds 재할당
 
-        Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, filteredApplicantIds, yearByAnswerIdMap);
+        Map<String, Double> scoreMap =
+                calculateAverageScoresByApplicant(year, filteredApplicantIds, yearByAnswerIdMap);
 
         return new FilteredRecordsWithScoresDto(filteredRecords, scoreMap);
     }
 
-    private List<Record> filterRecordsByYear(List<Record> records, Integer year, Map<String, Integer> yearByAnswerIdMap) {
+    private List<Record> filterRecordsByYear(
+            List<Record> records, Integer year, Map<String, Integer> yearByAnswerIdMap) {
         return records.stream()
                 .filter(
                         record ->
                                 year == null
                                         || Optional.ofNullable(record.getApplicantId())
-                                        .map(yearByAnswerIdMap::get)
-                                        .map(y -> y.equals(year))
-                                        .orElse(false))
+                                                .map(yearByAnswerIdMap::get)
+                                                .map(y -> y.equals(year))
+                                                .orElse(false))
                 .toList();
     }
 
