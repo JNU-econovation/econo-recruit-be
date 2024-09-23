@@ -19,7 +19,6 @@ import com.econovation.recruitdomain.out.RecordLoadPort;
 import com.econovation.recruitdomain.out.RecordRecordPort;
 import com.econovation.recruitdomain.out.ScoreLoadPort;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -82,7 +81,7 @@ public class RecordService implements RecordUseCase {
         Map<String, Integer> yearByAnswerIdMap =
                 applicants.stream()
                         .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
-        Map<String, Double> scoreMap = getScoreMap(year, applicantIds, yearByAnswerIdMap);
+        Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, applicantIds, yearByAnswerIdMap);
 
         result =
                 result.stream()
@@ -135,7 +134,7 @@ public class RecordService implements RecordUseCase {
 
         applicantIds =
                 applicants.stream().map(MongoAnswer::getId).toList(); // 검색 결과에 따라 applicantIds 재할당
-        Map<String, Double> scoreMap = getScoreMap(year, applicantIds, yearByAnswerIdMap);
+        Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, applicantIds, yearByAnswerIdMap);
 
         result =
                 result.stream()
@@ -159,7 +158,7 @@ public class RecordService implements RecordUseCase {
         return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
     }
 
-    private Map<String, Double> getScoreMap(
+    private Map<String, Double> calculateAverageScoresByApplicant(
             Integer year, List<String> applicantIds, Map<String, Integer> yearByAnswerIdMap) {
         List<Score> scores = scoreLoadPort.findByApplicantIds(applicantIds);
         return scores.stream()
