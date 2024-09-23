@@ -1,14 +1,13 @@
 package com.econovation.recruit.api.applicant.dto;
 
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
+
 import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
 import com.econovation.recruitdomain.domains.applicant.exception.ApplicantWrongStateException;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.Map;
-
-import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @Data
 @AllArgsConstructor

@@ -5,7 +5,6 @@ import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
 import com.econovation.recruitdomain.domains.applicant.event.aggregateevent.ApplicantStateUpdateEvent;
 import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantStateEvents;
-
 import lombok.RequiredArgsConstructor;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,7 @@ public class ApplicantStateUpdateEventListener {
 
     @EventHandler
     @Transactional
-    public String handle(ApplicantStateUpdateEvent event){
+    public String handle(ApplicantStateUpdateEvent event) {
         MongoAnswer answer = answerAdaptor.findById(event.getId()).get();
         ApplicantStateEvents command = ApplicantStateEvents.find(event.getAfterState());
 
@@ -36,5 +35,4 @@ public class ApplicantStateUpdateEventListener {
         answerAdaptor.save(answer);
         return answer.getApplicantStateOrDefault().getPassState();
     }
-
 }

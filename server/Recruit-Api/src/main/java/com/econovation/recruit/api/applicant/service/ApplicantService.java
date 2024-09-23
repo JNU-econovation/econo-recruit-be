@@ -1,5 +1,7 @@
 package com.econovation.recruit.api.applicant.service;
 
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
+
 import com.econovation.recruit.api.applicant.aggregate.AnswerAggregate;
 import com.econovation.recruit.api.applicant.dto.AnswersResponseDto;
 import com.econovation.recruit.api.applicant.dto.GetApplicantsStatusResponse;
@@ -19,8 +21,6 @@ import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @Service
 @RequiredArgsConstructor
@@ -99,7 +99,8 @@ public class ApplicantService implements ApplicantQueryUseCase {
     @Override
     public AnswersResponseDto search(Integer page, String searchKeyword) {
         List<MongoAnswer> answers = answerAdaptor.findBySearchKeyword(page, searchKeyword);
-        answers.forEach(answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantStateOrDefault()));
+        answers.forEach(
+                answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantStateOrDefault()));
         return AnswersResponseDto.of(
                 answers.stream().map(MongoAnswer::getQna).toList(),
                 new PageInfo(answers.size(), page));
@@ -183,12 +184,14 @@ public class ApplicantService implements ApplicantQueryUseCase {
 
     private List<Map<String, Object>> sortAndAddIds(List<MongoAnswer> result, String sortType) {
         sortHelper.sort(result, sortType);
-        return result.stream().map(
-                answer -> {
-                    Map<String, Object> qna = answer.getQna();
-                    qna.put("id", answer.getId());
-                    qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
-                    return qna;
-                }).toList();
+        return result.stream()
+                .map(
+                        answer -> {
+                            Map<String, Object> qna = answer.getQna();
+                            qna.put("id", answer.getId());
+                            qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
+                            return qna;
+                        })
+                .toList();
     }
 }

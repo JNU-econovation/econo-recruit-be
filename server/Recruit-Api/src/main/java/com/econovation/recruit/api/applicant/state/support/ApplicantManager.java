@@ -9,6 +9,5 @@ import org.springframework.stereotype.Component;
 public class ApplicantManager implements ApplicantStateManger {
 
     @Override
-    public void update(String applicantId, String afterState) {
-    }
+    public void update(String applicantId, String afterState) {}
 }

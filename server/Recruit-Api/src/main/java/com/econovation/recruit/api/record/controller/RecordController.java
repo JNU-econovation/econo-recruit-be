@@ -55,7 +55,9 @@ public class RecordController {
     @ApiErrorExceptionsExample(RecordFindExceptionDocs.class)
     @GetMapping("/page/{page}/records")
     public ResponseEntity<RecordsViewResponseDto> findAll(
-            @PathVariable(name = "page") Integer page, @ParameterObject String sortType, @ParameterObject Integer year) {
+            @PathVariable(name = "page") Integer page,
+            @ParameterObject String sortType,
+            @ParameterObject Integer year) {
         return new ResponseEntity<>(recordUseCase.execute(page, year, sortType), HttpStatus.OK);
     }
 
