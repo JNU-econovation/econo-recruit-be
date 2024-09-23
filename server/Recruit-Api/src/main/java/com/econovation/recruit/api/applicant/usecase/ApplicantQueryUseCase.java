@@ -18,7 +18,7 @@ public interface ApplicantQueryUseCase {
 
     List<MongoAnswer> execute(Integer year, String sortType, String searchKeyword, List<String> applicantIds);
 
-    PageInfo getPageInfo(Integer page, Integer year, String searchKeyword, List<String> applicantIds);
+    PageInfo getPageInfo(Integer year, Integer page, String searchKeyword);
 
     List<Map<String, Object>> execute();
 

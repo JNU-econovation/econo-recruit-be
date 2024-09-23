@@ -135,7 +135,7 @@ public class RecordService implements RecordUseCase {
             records = sortRecordsByApplicantsAndSortType(result, applicants);
         }
 
-        PageInfo pageInfo = applicantQueryUseCase.getPageInfo(page, year, searchKeyword, applicantIds);
+        PageInfo pageInfo = applicantQueryUseCase.getPageInfo(year, page, searchKeyword);
         return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
     }
 

@@ -47,7 +47,7 @@ public class ApplicantService implements ApplicantQueryUseCase {
 
     @Transactional(readOnly = true)
     public AnswersResponseDto execute(Integer year, Integer page, String sortType, String searchKeyword) {
-        PageInfo pageInfo = getPageInfo(year, searchKeyword, page);
+        PageInfo pageInfo = getPageInfo(year, page, searchKeyword);
         List<MongoAnswer> sortedResult = answerAdaptor.findByYearAndSearchKeyword(year, page, sortType, searchKeyword);
 
         List<Map<String, Object>> qnaMapList = getQnaMapListWithIdAndPassState(sortedResult);
@@ -67,14 +67,9 @@ public class ApplicantService implements ApplicantQueryUseCase {
         }).toList();
     }
 
-    private PageInfo getPageInfo(Integer year, String searchKeyword, Integer page) {
-        long totalCount = answerAdaptor.getTotalCountByYearAndSearchKeyword(year, searchKeyword);
-        return new PageInfo(totalCount, page);
-    }
-
     @Override
-    public PageInfo getPageInfo(Integer page, Integer year, String searchKeyword, List<String> applicantIds) {
-        long totalCount = answerAdaptor.getTotalCountByYearAndSearchKeywordAndApplicantIds(year, searchKeyword, applicantIds);
+    public PageInfo getPageInfo(Integer year, Integer page, String searchKeyword) {
+        long totalCount = answerAdaptor.getTotalCountByYearAndSearchKeyword(year, searchKeyword);
         return new PageInfo(totalCount, page);
     }
 

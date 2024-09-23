@@ -143,14 +143,4 @@ public class AnswerAdaptor {
 
         return mongoTemplate.find(query, MongoAnswer.class);
     }
-
-    public long getTotalCountByYearAndSearchKeywordAndApplicantIds(Integer year, String searchKeyword, List<String> applicantIds) {
-        Query query = new Query()
-                .addCriteria(Criteria.where("year").is(year))
-                .addCriteria(Criteria.where("id").in(applicantIds));
-
-        addCriteriaIfSearchKeywordExists(searchKeyword, query);
-
-        return mongoTemplate.count(query, MongoAnswer.class);
-    }
 }
