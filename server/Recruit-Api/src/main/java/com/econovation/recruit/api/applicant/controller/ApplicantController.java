@@ -83,7 +83,7 @@ public class ApplicantController {
             @PathVariable(value = "year") Integer year,
             @PathVariable(value = "page") Integer page,
             @ParameterObject String order,
-            @ParameterObject String searchKeyword) {
+            @RequestParam(required = false) String searchKeyword) {
         AnswersResponseDto result = applicantQueryUseCase.execute(year, page, order, searchKeyword);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

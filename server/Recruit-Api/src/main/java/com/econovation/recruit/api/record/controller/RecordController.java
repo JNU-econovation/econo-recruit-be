@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,7 +60,7 @@ public class RecordController {
             @PathVariable(name = "page") Integer page,
             @ParameterObject String order,
             @ParameterObject Integer year,
-            @ParameterObject String searchKeyword) {
+            @RequestParam(required = false) String searchKeyword) {
         return new ResponseEntity<>(recordUseCase.execute(page, year, order, searchKeyword), HttpStatus.OK);
     }
 
