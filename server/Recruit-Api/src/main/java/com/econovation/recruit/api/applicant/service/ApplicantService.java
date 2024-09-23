@@ -83,6 +83,11 @@ public class ApplicantService implements ApplicantQueryUseCase {
         return answerAdaptor.findByYearAndSearchKeywordAndApplicantIds(page, year, sortType, searchKeyword, applicantIds);
     }
 
+    @Override
+    public List<MongoAnswer> execute(Integer year, String sortType, String searchKeyword, List<String> applicantIds) {
+        return answerAdaptor.findByYearAndSearchKeywordAndApplicantIds(year, sortType, searchKeyword, applicantIds);
+    }
+
     @Transactional(readOnly = true)
     public AnswersResponseDto execute(Integer year, Integer page, String sortType) {
         PageInfo pageInfo = getPageInfo(year, page);
