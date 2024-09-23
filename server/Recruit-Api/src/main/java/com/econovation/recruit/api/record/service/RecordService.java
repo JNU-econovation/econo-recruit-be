@@ -3,6 +3,7 @@ package com.econovation.recruit.api.record.service;
 import static com.econovation.recruit.utils.sort.SortHelper.paginateList;
 
 import com.econovation.recruit.api.applicant.usecase.ApplicantQueryUseCase;
+import com.econovation.recruit.api.record.dto.FilteredRecordsWithScoresDto;
 import com.econovation.recruit.api.record.dto.RecordsViewResponseDto;
 import com.econovation.recruit.api.record.usecase.RecordUseCase;
 import com.econovation.recruit.utils.sort.SortHelper;
@@ -116,46 +117,49 @@ public class RecordService implements RecordUseCase {
         List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
 
         List<MongoAnswer> applicants;
+        List<Record> records;
+        FilteredRecordsWithScoresDto filteredData;
+
         if (sortType.equals("score")) {
             applicants = applicantQueryUseCase.execute(year, sortType, searchKeyword, applicantIds);
+            filteredData = filterRecordsAndCalculateScores(result, applicants, year, page);
+            records = sortRecordsByScoresDesc(filteredData.records(), filteredData.scoreMap(), page);
         } else {
-            applicants =
-                    applicantQueryUseCase.execute(
-                            page, year, sortType, searchKeyword, applicantIds);
+            applicants = applicantQueryUseCase.execute(page, year, sortType, searchKeyword, applicantIds);
+            filteredData = filterRecordsAndCalculateScores(result, applicants, year, page);
+            records = sortRecordsByApplicantsAndSortType(filteredData.records(), applicants);
         }
 
         if (result.isEmpty() || applicants.isEmpty()) {
             return RecordsViewResponseDto.empty(new PageInfo(0, page));
         }
 
+        PageInfo pageInfo = applicantQueryUseCase.getPageInfo(year, page, searchKeyword);
+        return RecordsViewResponseDto.of(pageInfo, records, filteredData.scoreMap(), applicants);
+    }
+
+    private FilteredRecordsWithScoresDto filterRecordsAndCalculateScores(List<Record> records, List<MongoAnswer> applicants, Integer year, Integer page) {
         Map<String, Integer> yearByAnswerIdMap =
                 applicants.stream()
                         .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
 
-        applicantIds =
-                applicants.stream().map(MongoAnswer::getId).toList(); // 검색 결과에 따라 applicantIds 재할당
-        Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, applicantIds, yearByAnswerIdMap);
-
-        result =
-                result.stream()
+        List<Record> filteredRecords =
+                records.stream()
                         .filter(
                                 record ->
                                         year == null
                                                 || Optional.ofNullable(record.getApplicantId())
-                                                        .map(yearByAnswerIdMap::get)
-                                                        .map(y -> y.equals(year))
-                                                        .orElse(false))
+                                                .map(yearByAnswerIdMap::get)
+                                                .map(y -> y.equals(year))
+                                                .orElse(false))
                         .toList();
 
-        List<Record> records;
-        if (sortType.equals("score")) {
-            records = sortRecordsByScoresDesc(result, scoreMap, page);
-        } else {
-            records = sortRecordsByApplicantsAndSortType(result, applicants);
-        }
+        List<String> filteredApplicantIds =
+                applicants.stream().map(MongoAnswer::getId).toList(); // 검색 결과에 따라 applicantIds 재할당
 
-        PageInfo pageInfo = applicantQueryUseCase.getPageInfo(year, page, searchKeyword);
-        return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
+        Map<String, Double> scoreMap = calculateAverageScoresByApplicant(year, filteredApplicantIds, yearByAnswerIdMap);
+
+        return new FilteredRecordsWithScoresDto(filteredRecords, scoreMap);
     }
 
     private Map<String, Double> calculateAverageScoresByApplicant(
