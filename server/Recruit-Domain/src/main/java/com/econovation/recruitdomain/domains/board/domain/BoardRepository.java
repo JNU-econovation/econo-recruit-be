@@ -16,5 +16,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
     List<Board> findByColumnIdIn(List<Integer> columnsIds);
 
+    List<Board> findByColumnId(Integer columnId);
+
     Optional<Board> findByCardId(Long cardId);
 }

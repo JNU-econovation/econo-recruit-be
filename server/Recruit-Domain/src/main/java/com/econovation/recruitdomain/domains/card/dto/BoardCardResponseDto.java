@@ -4,9 +4,11 @@ import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantSta
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.CardType;
 import com.econovation.recruitdomain.domains.card.domain.Card;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,9 @@ import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @Getter
 @Data
+@NoArgsConstructor
 @Builder
+@AllArgsConstructor
 public class BoardCardResponseDto {
     private Long id;
     private Integer boardId;

@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class LabelService implements LabelUseCase {
             waitTime = 1000L,
             leaseTime = 1000L)
     @Transactional
+    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
     public Boolean createLabel(String applicantId) {
         Long idpId = SecurityUtils.getCurrentUserId();
         Card card = cardLoadPort.findByApplicantId(applicantId);
@@ -67,6 +69,7 @@ public class LabelService implements LabelUseCase {
             identifier = "applicantId",
             waitTime = 1000L,
             leaseTime = 1000L)
+    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
     public void deleteLabel(String applicantId) {
         Long idpId = SecurityUtils.getCurrentUserId();
         Label label = labelLoadPort.loadLabelByApplicantIdAndIdpId(applicantId, idpId);
@@ -87,6 +90,7 @@ public class LabelService implements LabelUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "boardCardsByNavigationId", allEntries = true)
     public Boolean createLabelByCardId(Long cardId) {
         Long idpId = SecurityUtils.getCurrentUserId();
         Card card = cardLoadPort.findById(cardId);

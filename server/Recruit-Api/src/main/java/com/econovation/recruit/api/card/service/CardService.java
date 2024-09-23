@@ -7,6 +7,9 @@ import com.econovation.recruit.api.card.usecase.CardLoadUseCase;
 import com.econovation.recruit.api.card.usecase.CardRegisterUseCase;
 import com.econovation.recruit.api.card.usecase.ColumnsUseCase;
 import com.econovation.recruit.api.config.security.SecurityUtils;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCardId;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByCreateWorkCard;
+import com.econovation.recruitcommon.annotation.InvalidateCacheByUpdateWorkCard;
 import com.econovation.recruitcommon.utils.Result;
 import com.econovation.recruitdomain.common.aop.domainEvent.Events;
 import com.econovation.recruitdomain.common.events.WorkCardDeletedEvent;
@@ -33,6 +36,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +62,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "boardCardsByNavigationId", key = "#navigationId")
     public List<BoardCardResponseDto> getByNavigationId(Integer navigationId, Integer year) {
         Long userId = SecurityUtils.getCurrentUserId();
         List<Columns> columns = columnsUseCase.getByNavigationId(navigationId);
@@ -160,6 +166,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional
+    @InvalidateCacheByCardId
     public void deleteById(Long cardId) {
         Board board = boardLoadUseCase.getBoardByCardId(cardId);
         Result<Board> prevBoard = boardLoadUseCase.getBoardByNextBoardId(board.getId());
@@ -180,6 +187,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional
+    @InvalidateCacheByCreateWorkCard
     public void saveWorkCard(CreateWorkCardDto createWorkCardDto) {
         Card card =
                 Card.builder()
@@ -193,6 +201,7 @@ public class CardService implements CardRegisterUseCase, CardLoadUseCase {
 
     @Override
     @Transactional
+    @InvalidateCacheByUpdateWorkCard
     public void update(Long cardId, UpdateWorkCardDto updateWorkCardDto) {
         Card card = cardLoadPort.findById(cardId);
         //        단 title 이 null일 수도 있고, content가 null일 수도 있다.

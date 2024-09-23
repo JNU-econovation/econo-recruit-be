@@ -20,6 +20,8 @@ import com.econovation.recruitdomain.out.ScoreLoadPort;
 import java.util.*;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ public class RecordService implements RecordUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "recordsByPage", allEntries = true)
     public Record createRecord(CreateRecordDto recordDto) {
         if (applicantQueryUseCase.execute(recordDto.getApplicantId()) == null) {
             throw ApplicantNotFoundException.EXCEPTION;
@@ -57,6 +60,7 @@ public class RecordService implements RecordUseCase {
      *     Records를 모두 조회합니다 )
      */
     @Override
+    @Cacheable(value = "recordsByPage")
     public RecordsViewResponseDto execute(Integer page, Integer year, String sortType) {
         List<Record> result = recordLoadPort.findAll(page);
         PageInfo pageInfo = getPageInfo(page);
@@ -145,6 +149,7 @@ public class RecordService implements RecordUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "recordsByPage", allEntries = true)
     public void updateRecordUrl(String applicantId, String url) {
         recordLoadPort
                 .findByApplicantId(applicantId)
@@ -156,6 +161,7 @@ public class RecordService implements RecordUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "recordsByPage", allEntries = true)
     public void updateRecordContents(String applicantId, String contents) {
         recordLoadPort
                 .findByApplicantId(applicantId)
@@ -167,6 +173,7 @@ public class RecordService implements RecordUseCase {
 
     @Override
     @Transactional
+    @CacheEvict(value = "recordsByPage", allEntries = true)
     public void updateRecord(String applicantId, UpdateRecordDto updateRecordDto) {
         recordLoadPort
                 .findByApplicantId(applicantId)

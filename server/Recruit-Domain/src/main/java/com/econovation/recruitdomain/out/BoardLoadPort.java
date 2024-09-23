@@ -19,5 +19,7 @@ public interface BoardLoadPort {
 
     List<Board> getBoardByColumnsIds(List<Integer> columnsIds);
 
+    List<Board> getBoardByColumnsId(Integer columnsId);
+
     Board getBoardByCardId(Long cardId);
 }
