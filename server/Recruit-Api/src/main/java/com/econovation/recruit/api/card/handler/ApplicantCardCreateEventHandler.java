@@ -61,5 +61,4 @@ public class ApplicantCardCreateEventHandler {
         log.info("hopeField = {}", titleParts[0]);
         return titleParts[0];
     }
-
 }

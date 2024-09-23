@@ -6,9 +6,8 @@ import com.econovation.recruit.api.applicant.command.CreateAnswerCommand;
 import com.econovation.recruit.api.applicant.command.UpdateApplicantStateCommand;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.event.aggregateevent.AnswerCreatedEvent;
-import java.util.Map;
-
 import com.econovation.recruitdomain.domains.applicant.event.aggregateevent.ApplicantStateUpdateEvent;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,7 +34,7 @@ public class AnswerAggregate {
     }
 
     @CommandHandler
-    public AnswerAggregate(UpdateApplicantStateCommand command){
+    public AnswerAggregate(UpdateApplicantStateCommand command) {
         apply(new ApplicantStateUpdateEvent(command.getId(), command.getAfterState()));
     }
 
@@ -48,7 +47,7 @@ public class AnswerAggregate {
     }
 
     @EventSourcingHandler
-    public void on(ApplicantStateUpdateEvent event){
+    public void on(ApplicantStateUpdateEvent event) {
         this.id = event.getId();
         log.info("ApplicantID : " + event.getId());
         log.info("상태 변경 : " + event.getAfterState());

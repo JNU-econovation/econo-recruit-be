@@ -162,9 +162,9 @@ public class BoardRestController {
             description = "navigationId에 해당하는 모든 칸반을 조회합니다.")
     @GetMapping("/navigations/{navigation-id}/boards")
     public ResponseEntity<List<BoardCardResponseDto>> getBoardByNavigationId(
-            @PathVariable("navigation-id") Integer navigationId,
-            @ParameterObject Integer year) {
-        return new ResponseEntity<>(cardLoadUseCase.getByNavigationId(navigationId, year), HttpStatus.OK);
+            @PathVariable("navigation-id") Integer navigationId, @ParameterObject Integer year) {
+        return new ResponseEntity<>(
+                cardLoadUseCase.getByNavigationId(navigationId, year), HttpStatus.OK);
     }
 
     @Operation(summary = "지원서 조회(원하는 field) 만 조회", description = "원하는 field만(리스트) 조회합니다.")

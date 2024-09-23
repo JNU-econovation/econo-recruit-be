@@ -4,20 +4,23 @@ public class ApplicantState {
 
     private PassStates passState;
 
-    public ApplicantState(){
+    public ApplicantState() {
         this.passState = PassStates.NON_PROCESSED; // 초기 상태
     }
 
-    public void pass(PeriodStates period){
+    public void pass(PeriodStates period) {
         this.passState = this.passState.pass(period);
     }
 
-    public void nonPass(PeriodStates period){
+    public void nonPass(PeriodStates period) {
         this.passState = this.passState.nonPass(period);
     }
 
-    public String getPassState(){
+    public String getPassState() {
         return this.passState.toString();
     }
 
+    public PassStates getPassStateToEnum() {
+        return this.passState;
+    }
 }

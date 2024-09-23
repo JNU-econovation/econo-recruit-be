@@ -1,17 +1,16 @@
 package com.econovation.recruitdomain.domains.card.dto;
 
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
+
 import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
 import com.econovation.recruitdomain.domains.board.domain.Board;
 import com.econovation.recruitdomain.domains.board.domain.CardType;
 import com.econovation.recruitdomain.domains.card.domain.Card;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @Getter
 @Data
@@ -31,7 +30,7 @@ public class BoardCardResponseDto {
     private String firstPriority;
     private String secondPriority;
     private Boolean isLabeled;
-    private Map<String,String> state;
+    private Map<String, String> state;
 
     public static BoardCardResponseDto from(
             Card card,
@@ -60,7 +59,7 @@ public class BoardCardResponseDto {
                 .build();
     }
 
-    private static Map<String, String> toMap(ApplicantState state){
+    private static Map<String, String> toMap(ApplicantState state) {
         Map<String, String> stateMap = new HashMap<>();
         stateMap.put(PASS_STATE_KEY, state.getPassState());
         return stateMap;

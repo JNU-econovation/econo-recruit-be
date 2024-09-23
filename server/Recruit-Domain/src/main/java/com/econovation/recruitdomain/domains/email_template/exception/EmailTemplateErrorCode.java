@@ -1,4 +1,4 @@
-package com.econovation.recruitdomain.domains.applicant.exception;
+package com.econovation.recruitdomain.domains.email_template.exception;
 
 import static com.econovation.recruitcommon.consts.RecruitStatic.BAD_REQUEST;
 import static com.econovation.recruitcommon.consts.RecruitStatic.NOT_FOUND;
@@ -13,13 +13,13 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum ApplicantErrorCode implements BaseErrorCode {
-    APPLICANT_NOT_FOUND(NOT_FOUND, "APPLICANT_NOT_FOUND", "지원자를 찾을 수 없습니다."),
-    APPLICANT_DUPLICATE_SUBMIT(BAD_REQUEST, "APPLICANT_400_1", "이미 지원한 지원자입니다."),
-    APPLICANT_PROHIBIT_DELETE(BAD_REQUEST, "APPLICANT_400_2", "지원자를 삭제할 수 없습니다."),
-    APPLICANT_WRONG_POSITION(BAD_REQUEST, "APPLICANT_400_3", "디자이너, 개발자, 기획자 중 하나의 포지션을 선택해주세요."),
-    APPLICANT_WRONG_STATE(BAD_REQUEST, "APPLICANT_400_4", "올바른 합/불 상태를 선택해주세요.");
-
+public enum EmailTemplateErrorCode implements BaseErrorCode {
+    EMAIL_TEMPLATE_NOT_FOUND(NOT_FOUND, "EMAIL_TEMPLATE_404_1", "해당 템플릿을 찾을 수 없습니다."),
+    EMAIL_TEMPLATE_INVALID_FORMAT(
+            BAD_REQUEST, "EMAIL_TEMPLATE_400_1", "메일 발송 템플릿이 특수 문자(%s%)를 포함하고 있습니다."),
+    EMAIL_TEMPLATE_INVALID_SCHEDULE_TIME(
+            BAD_REQUEST, "EMAIL_TEMPLATE_400_2", "예약 시간이 현재 시간보다 이전입니다."),
+    ;
     private Integer status;
     private String code;
     private String reason;

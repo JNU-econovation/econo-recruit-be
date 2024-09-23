@@ -3,14 +3,13 @@ package com.econovation.recruit.api.applicant.service;
 import com.econovation.recruit.api.applicant.handler.ApplicantStateUpdateEventHandler;
 import com.econovation.recruit.api.applicant.usecase.ApplicantCommandUseCase;
 import com.econovation.recruitdomain.common.aop.domainEvent.Events;
-import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswerAdaptor;
+import com.econovation.recruitdomain.domains.applicant.domain.state.ApplicantState;
 import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantRegisterEvent;
+import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantStateModifyEvent;
 import java.util.Map;
 import java.util.UUID;
-
-import com.econovation.recruitdomain.domains.applicant.event.domainevent.ApplicantStateModifyEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,7 +43,13 @@ public class AnswerCommandService implements ApplicantCommandUseCase {
     @Override
     public UUID execute(Map<String, Object> qna, UUID id) {
         ApplicantState nonProcessed = new ApplicantState();
-        MongoAnswer answer = MongoAnswer.builder().id(id.toString()).qna(qna).year(year).applicantState(nonProcessed).build();
+        MongoAnswer answer =
+                MongoAnswer.builder()
+                        .id(id.toString())
+                        .qna(qna)
+                        .year(year)
+                        .applicantState(nonProcessed)
+                        .build();
         //        학번으로 중복 체크
         //        validateRegisterApplicant(qna);
         answerAdaptor.save(answer);
