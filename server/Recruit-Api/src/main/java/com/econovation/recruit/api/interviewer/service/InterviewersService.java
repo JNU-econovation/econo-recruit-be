@@ -14,11 +14,13 @@ import com.econovation.recruitdomain.domains.interviewer.exception.InterviewerCa
 import com.econovation.recruitdomain.out.InterviewerLoadPort;
 import com.econovation.recruitdomain.out.InterviewerRecordPort;
 import com.econovation.recruitinfrastructure.idp.dto.InterviewerResponse;
-import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,10 +67,19 @@ public class InterviewersService implements InterviewerUseCase {
     }
 
     @Override
-    public List<InterviewerResponseDto> findAll(String sortType) {
+    public List<InterviewerResponseDto> findAll(String sortType, List<String> roles) {
         List<Interviewer> interviewers = interviewerLoadPort.findAll();
+        if (roles != null && !roles.isEmpty()) {
+            interviewers = interviewers.stream()
+                            .filter(interviewer -> roles.contains(removeRolePrefix(interviewer.getRole().name())))
+                            .collect(Collectors.toList());
+        }
         interviewerSortHelper.sort(interviewers, sortType);
         return interviewers.stream().map(InterviewerResponseDto::from).toList();
+    }
+
+    private String removeRolePrefix(String role) {
+        return role.replace("ROLE_", "");
     }
 
     @Override

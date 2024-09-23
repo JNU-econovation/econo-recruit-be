@@ -17,7 +17,7 @@ public interface InterviewerUseCase {
 
     List<InterviewerResponseDto> findAll();
 
-    List<InterviewerResponseDto> findAll(String sortType);
+    List<InterviewerResponseDto> findAll(String sortType, List<String> roles);
 
     void createTempInterviewers();
 
