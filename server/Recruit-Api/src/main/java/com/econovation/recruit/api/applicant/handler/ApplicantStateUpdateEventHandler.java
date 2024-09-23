@@ -17,12 +17,12 @@ public class ApplicantStateUpdateEventHandler {
     private final MongoAnswerAdaptor answerAdaptor;
     private final PeriodCalculator periodCalculator;
 
-//    @Async
-//    @TransactionalEventListener(
-//            classes = ApplicantRegisterEvent.class,
-//            phase = TransactionPhase.AFTER_COMMIT)
-//    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public String handle(ApplicantStateModifyEvent event){
+    //    @Async
+    //    @TransactionalEventListener(
+    //            classes = ApplicantRegisterEvent.class,
+    //            phase = TransactionPhase.AFTER_COMMIT)
+    //    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public String handle(ApplicantStateModifyEvent event) {
         MongoAnswer answer = answerAdaptor.findById(event.getApplicantId()).get();
         ApplicantStateEvents command = event.getEvent();
         answer.stateEmptyCheckAndInit();
@@ -38,5 +38,4 @@ public class ApplicantStateUpdateEventHandler {
         answerAdaptor.save(answer);
         return answer.getApplicantStateOrDefault().getPassState();
     }
-
 }

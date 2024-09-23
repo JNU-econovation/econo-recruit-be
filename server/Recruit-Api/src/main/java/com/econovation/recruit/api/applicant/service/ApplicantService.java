@@ -1,5 +1,7 @@
 package com.econovation.recruit.api.applicant.service;
 
+import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
+
 import com.econovation.recruit.api.applicant.aggregate.AnswerAggregate;
 import com.econovation.recruit.api.applicant.dto.AnswersResponseDto;
 import com.econovation.recruit.api.applicant.dto.GetApplicantsStatusResponse;
@@ -19,8 +21,6 @@ import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.econovation.recruitcommon.consts.RecruitStatic.PASS_STATE_KEY;
 
 @Service
 @RequiredArgsConstructor
@@ -46,9 +46,11 @@ public class ApplicantService implements ApplicantQueryUseCase {
     }
 
     @Transactional(readOnly = true)
-    public AnswersResponseDto execute(Integer year, Integer page, String sortType, String searchKeyword) {
+    public AnswersResponseDto execute(
+            Integer year, Integer page, String sortType, String searchKeyword) {
         PageInfo pageInfo = getPageInfo(year, page, searchKeyword);
-        List<MongoAnswer> sortedResult = answerAdaptor.findByYearAndSearchKeyword(year, page, sortType, searchKeyword);
+        List<MongoAnswer> sortedResult =
+                answerAdaptor.findByYearAndSearchKeyword(year, page, sortType, searchKeyword);
 
         List<Map<String, Object>> qnaMapList = getQnaMapListWithIdAndPassState(sortedResult);
 
@@ -58,13 +60,17 @@ public class ApplicantService implements ApplicantQueryUseCase {
         return AnswersResponseDto.of(qnaMapList, pageInfo);
     }
 
-    private List<Map<String, Object>> getQnaMapListWithIdAndPassState(List<MongoAnswer> sortedResult) {
-        return sortedResult.stream().map(answer -> {
-            Map<String, Object> qna = answer.getQna();
-            qna.put("id", answer.getId());
-            qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
-            return qna;
-        }).toList();
+    private List<Map<String, Object>> getQnaMapListWithIdAndPassState(
+            List<MongoAnswer> sortedResult) {
+        return sortedResult.stream()
+                .map(
+                        answer -> {
+                            Map<String, Object> qna = answer.getQna();
+                            qna.put("id", answer.getId());
+                            qna.put(PASS_STATE_KEY, answer.getApplicantStateOrDefault());
+                            return qna;
+                        })
+                .toList();
     }
 
     @Override
@@ -74,13 +80,21 @@ public class ApplicantService implements ApplicantQueryUseCase {
     }
 
     @Transactional(readOnly = true)
-    public List<MongoAnswer> execute(Integer page, Integer year, String sortType, String searchKeyword, List<String> applicantIds) {
-        return answerAdaptor.findByYearAndSearchKeywordAndApplicantIds(page, year, sortType, searchKeyword, applicantIds);
+    public List<MongoAnswer> execute(
+            Integer page,
+            Integer year,
+            String sortType,
+            String searchKeyword,
+            List<String> applicantIds) {
+        return answerAdaptor.findByYearAndSearchKeywordAndApplicantIds(
+                page, year, sortType, searchKeyword, applicantIds);
     }
 
     @Override
-    public List<MongoAnswer> execute(Integer year, String sortType, String searchKeyword, List<String> applicantIds) {
-        return answerAdaptor.findByYearAndSearchKeywordAndApplicantIds(year, sortType, searchKeyword, applicantIds);
+    public List<MongoAnswer> execute(
+            Integer year, String sortType, String searchKeyword, List<String> applicantIds) {
+        return answerAdaptor.findByYearAndSearchKeywordAndApplicantIds(
+                year, sortType, searchKeyword, applicantIds);
     }
 
     @Transactional(readOnly = true)
@@ -137,7 +151,8 @@ public class ApplicantService implements ApplicantQueryUseCase {
     @Override
     public AnswersResponseDto search(Integer page, String searchKeyword) {
         List<MongoAnswer> answers = answerAdaptor.findBySearchKeyword(page, searchKeyword);
-        answers.forEach(answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantStateOrDefault()));
+        answers.forEach(
+                answer -> answer.getQna().put(PASS_STATE_KEY, answer.getApplicantStateOrDefault()));
         return AnswersResponseDto.of(
                 answers.stream().map(MongoAnswer::getQna).toList(),
                 new PageInfo(answers.size(), page));

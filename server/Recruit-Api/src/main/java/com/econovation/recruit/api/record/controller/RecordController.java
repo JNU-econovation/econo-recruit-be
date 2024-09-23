@@ -61,7 +61,8 @@ public class RecordController {
             @ParameterObject String order,
             @ParameterObject Integer year,
             @RequestParam(required = false) String searchKeyword) {
-        return new ResponseEntity<>(recordUseCase.execute(page, year, order, searchKeyword), HttpStatus.OK);
+        return new ResponseEntity<>(
+                recordUseCase.execute(page, year, order, searchKeyword), HttpStatus.OK);
     }
 
     @Operation(summary = "지원자의 면접기록을 전부 조회합니다")

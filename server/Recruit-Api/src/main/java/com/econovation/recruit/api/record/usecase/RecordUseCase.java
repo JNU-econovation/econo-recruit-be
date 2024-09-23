@@ -13,7 +13,8 @@ public interface RecordUseCase {
 
     RecordsViewResponseDto execute(Integer page, Integer year, String sortType);
 
-    RecordsViewResponseDto execute(Integer page, Integer year, String sortType, String searchKeyword);
+    RecordsViewResponseDto execute(
+            Integer page, Integer year, String sortType, String searchKeyword);
 
     Record findByApplicantId(String applicantId);
 

@@ -61,7 +61,8 @@ public class RecordService implements RecordUseCase {
     /**
      * 1. Newest // 시간 순 오름차순 2. Name // 이름순 오름차순 3. Object // 지원 분야별 오름차순 4. Score // 점수 내림차순
      *
-     * @return List<RecordResponseDto> // 지원자의 면접기록을 페이지별로 조회합니다 ( 이 화면에서는 Applicants,Scores, Records를 모두 조회합니다 )
+     * @return List<RecordResponseDto> // 지원자의 면접기록을 페이지별로 조회합니다 ( 이 화면에서는 Applicants,Scores,
+     *     Records를 모두 조회합니다 )
      */
     @Override
     public RecordsViewResponseDto execute(Integer page, Integer year, String sortType) {
@@ -69,25 +70,35 @@ public class RecordService implements RecordUseCase {
         PageInfo pageInfo = getPageInfo(page);
 
         List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
-        List<MongoAnswer> applicants = applicantQueryUseCase.execute(applicantIds).stream()
-                .filter(applicant -> year == null || applicant.getYear().equals(year)).toList();
+        List<MongoAnswer> applicants =
+                applicantQueryUseCase.execute(applicantIds).stream()
+                        .filter(applicant -> year == null || applicant.getYear().equals(year))
+                        .toList();
 
         if (result.isEmpty() || applicants.isEmpty()) {
             return createEmptyResponse(pageInfo);
         }
 
-        Map<String, Integer> yearByAnswerIdMap = applicants.stream().collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
+        Map<String, Integer> yearByAnswerIdMap =
+                applicants.stream()
+                        .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
         Map<String, Double> scoreMap = getScoreMap(year, applicantIds, yearByAnswerIdMap);
 
-        result = result.stream().filter(record -> year == null ||
-                        Optional.ofNullable(record.getApplicantId())
-                                .map(yearByAnswerIdMap::get)
-                                .map(y -> y.equals(year))
-                                .orElse(false)
-                )
-                .toList();
+        result =
+                result.stream()
+                        .filter(
+                                record ->
+                                        year == null
+                                                || Optional.ofNullable(record.getApplicantId())
+                                                        .map(yearByAnswerIdMap::get)
+                                                        .map(y -> y.equals(year))
+                                                        .orElse(false))
+                        .toList();
 
-        applicants = new ArrayList<>(applicants); // Unmodifiable List일 경우 Sort 불가. stream().toList()의 결과는 Unmodifiable List
+        applicants =
+                new ArrayList<>(
+                        applicants); // Unmodifiable List일 경우 Sort 불가. stream().toList()의 결과는
+        // Unmodifiable List
 
         List<Record> records;
         if (sortType.equals("score")) {
@@ -100,7 +111,8 @@ public class RecordService implements RecordUseCase {
     }
 
     @Override
-    public RecordsViewResponseDto execute(Integer page, Integer year, String sortType, String searchKeyword) {
+    public RecordsViewResponseDto execute(
+            Integer page, Integer year, String sortType, String searchKeyword) {
         List<Record> result = recordLoadPort.findAll();
         List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
 
@@ -108,25 +120,33 @@ public class RecordService implements RecordUseCase {
         if (sortType.equals("score")) {
             applicants = applicantQueryUseCase.execute(year, sortType, searchKeyword, applicantIds);
         } else {
-            applicants = applicantQueryUseCase.execute(page, year, sortType, searchKeyword, applicantIds);
+            applicants =
+                    applicantQueryUseCase.execute(
+                            page, year, sortType, searchKeyword, applicantIds);
         }
 
         if (result.isEmpty() || applicants.isEmpty()) {
             return createEmptyResponse(new PageInfo(0, page));
         }
 
-        Map<String, Integer> yearByAnswerIdMap = applicants.stream().collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
+        Map<String, Integer> yearByAnswerIdMap =
+                applicants.stream()
+                        .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
 
-        applicantIds = applicants.stream().map(MongoAnswer::getId).toList();    // 검색 결과에 따라 applicantIds 재할당
+        applicantIds =
+                applicants.stream().map(MongoAnswer::getId).toList(); // 검색 결과에 따라 applicantIds 재할당
         Map<String, Double> scoreMap = getScoreMap(year, applicantIds, yearByAnswerIdMap);
 
-        result = result.stream().filter(record -> year == null ||
-                        Optional.ofNullable(record.getApplicantId())
-                                .map(yearByAnswerIdMap::get)
-                                .map(y -> y.equals(year))
-                                .orElse(false)
-                )
-                .toList();
+        result =
+                result.stream()
+                        .filter(
+                                record ->
+                                        year == null
+                                                || Optional.ofNullable(record.getApplicantId())
+                                                        .map(yearByAnswerIdMap::get)
+                                                        .map(y -> y.equals(year))
+                                                        .orElse(false))
+                        .toList();
 
         List<Record> records;
         if (sortType.equals("score")) {
@@ -141,16 +161,19 @@ public class RecordService implements RecordUseCase {
 
     private RecordsViewResponseDto createEmptyResponse(PageInfo pageInfo) {
         return RecordsViewResponseDto.of(
-                pageInfo,
-                Collections.emptyList(),
-                Collections.emptyMap(),
-                Collections.emptyList());
+                pageInfo, Collections.emptyList(), Collections.emptyMap(), Collections.emptyList());
     }
 
-    private Map<String, Double> getScoreMap(Integer year, List<String> applicantIds, Map<String, Integer> yearByAnswerIdMap) {
+    private Map<String, Double> getScoreMap(
+            Integer year, List<String> applicantIds, Map<String, Integer> yearByAnswerIdMap) {
         List<Score> scores = scoreLoadPort.findByApplicantIds(applicantIds);
         return scores.stream()
-                .filter(score -> year == null || yearByAnswerIdMap.get(score.getApplicantId()).equals(year))
+                .filter(
+                        score ->
+                                year == null
+                                        || yearByAnswerIdMap
+                                                .get(score.getApplicantId())
+                                                .equals(year))
                 .collect(
                         Collectors.groupingBy(
                                 Score::getApplicantId,
@@ -160,28 +183,29 @@ public class RecordService implements RecordUseCase {
     private List<Record> sortRecordsByScoresDesc(
             List<Record> records, Map<String, Double> scoreMap) {
         // score 내림차순 정렬
-        List<Record> sortedRecords = records.stream()
-                .sorted(
-                        Comparator.comparing(
-                                record -> {
-                                    Double score = scoreMap.get(record.getApplicantId());
-                                    return score == null ? 0 : score;
-                                }))
-                .toList();
+        List<Record> sortedRecords =
+                records.stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        record -> {
+                                            Double score = scoreMap.get(record.getApplicantId());
+                                            return score == null ? 0 : score;
+                                        }))
+                        .toList();
         return sortedRecords;
     }
 
     private List<Record> sortRecordsByScoresDesc(
             List<Record> records, Map<String, Double> scoreMap, Integer page) {
         // score 내림차순 정렬
-        List<Record> sortedRecords = records.stream()
-                .sorted(
-                        Comparator.comparing(
-                                record -> scoreMap.getOrDefault(record.getApplicantId(), 0.0),
-                                Comparator.reverseOrder()
-                        )
-                )
-                .toList();
+        List<Record> sortedRecords =
+                records.stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        record ->
+                                                scoreMap.getOrDefault(record.getApplicantId(), 0.0),
+                                        Comparator.reverseOrder()))
+                        .toList();
         // 페이징 함수 호출
         return paginateList(sortedRecords, page);
     }
@@ -206,7 +230,8 @@ public class RecordService implements RecordUseCase {
                 .toList();
     }
 
-    private List<Record> sortRecordsByApplicantsAndSortType(List<Record> records, List<MongoAnswer> applicants) {
+    private List<Record> sortRecordsByApplicantsAndSortType(
+            List<Record> records, List<MongoAnswer> applicants) {
 
         Map<String, Integer> applicantIndexMap = new HashMap<>();
         for (int i = 0; i < applicants.size(); i++) {
@@ -236,10 +261,7 @@ public class RecordService implements RecordUseCase {
     @Override
     @Transactional
     public void updateRecordUrl(String applicantId, String url) {
-        recordLoadPort
-                .findByApplicantId(applicantId)
-                .ifPresent(
-                        record -> record.updateUrl(url));
+        recordLoadPort.findByApplicantId(applicantId).ifPresent(record -> record.updateUrl(url));
     }
 
     @Override
@@ -247,8 +269,7 @@ public class RecordService implements RecordUseCase {
     public void updateRecordContents(String applicantId, String contents) {
         recordLoadPort
                 .findByApplicantId(applicantId)
-                .ifPresent(
-                        record -> record.updateRecord(contents));
+                .ifPresent(record -> record.updateRecord(contents));
     }
 
     @Override
