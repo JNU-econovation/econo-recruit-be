@@ -1,7 +1,10 @@
 package com.econovation.recruit.utils.sort;
 
+import static com.econovation.recruitcommon.consts.RecruitStatic.PAGE_SIZE;
+
 import com.econovation.recruit.utils.sort.strategy.SortStrategy;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +53,16 @@ public class SortHelper<T> {
                         "@Qualifier Annotation(sorting strategy bean)을 찾을 수 없습니다.");
             }
         }
+    }
+
+    public static <T> List<T> paginateList(List<T> list, Integer page) {
+        if (page == null || page < 1) {
+            page = 1;
+        }
+        int startIndex = (page - 1) * PAGE_SIZE;
+        int endIndex = Math.min(startIndex + PAGE_SIZE, list.size());
+
+        return startIndex < endIndex ? list.subList(startIndex, endIndex) : Collections.emptyList();
     }
 
     private Class<?> resolveGenericType(Class<?> clazz) {
