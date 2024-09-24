@@ -100,11 +100,12 @@ public class AnswerAdaptor {
         switch (sortType) {
             case "name" -> query.with(Sort.by(Direction.ASC, "qna.name"));
             case "newest" -> query.with(Sort.by(Direction.DESC, "created_date"));
-            case "objective" -> query.with(Sort.by(
-                    Sort.Order.asc("qna.field"),        // 지원 분야: 개발자, 기획자, 디자이너
-                    Sort.Order.desc("qna.field1"),      // 세부 분야 1순위: WEB, GAME, APP, AI
-                    Sort.Order.desc("qna.field2")       // 세부 분야 2순위: WEB, GAME, APP, AI
-            ));
+            case "objective" -> query.with(
+                    Sort.by(
+                            Sort.Order.asc("qna.field"), // 지원 분야: 개발자, 기획자, 디자이너
+                            Sort.Order.desc("qna.field1"), // 세부 분야 1순위: WEB, GAME, APP, AI
+                            Sort.Order.desc("qna.field2") // 세부 분야 2순위: WEB, GAME, APP, AI
+                            ));
         }
     }
 
