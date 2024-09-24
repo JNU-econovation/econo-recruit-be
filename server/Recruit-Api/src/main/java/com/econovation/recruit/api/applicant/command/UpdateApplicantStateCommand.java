@@ -12,5 +12,4 @@ public class UpdateApplicantStateCommand {
 
     @TargetAggregateIdentifier private String id;
     private String afterState;
-
 }

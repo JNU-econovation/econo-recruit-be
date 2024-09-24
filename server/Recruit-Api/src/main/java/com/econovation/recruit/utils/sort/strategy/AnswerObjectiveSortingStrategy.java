@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 // @Component
 @Qualifier("answerObjectiveSort")
 public class AnswerObjectiveSortingStrategy implements SortStrategy<MongoAnswer> {
-    String[] fieldOrder = {"APP", "WEB", "AI", "GAME"};
+    String[] fieldOrder = {"WEB", "GAME", "APP", "AI"};
 
     @Override
     public int compare(MongoAnswer obj1, MongoAnswer obj2) {
