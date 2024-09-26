@@ -14,6 +14,7 @@ import com.econovation.recruitdomain.domains.interviewer.exception.InterviewerCa
 import com.econovation.recruitdomain.out.InterviewerLoadPort;
 import com.econovation.recruitdomain.out.InterviewerRecordPort;
 import com.econovation.recruitinfrastructure.idp.dto.InterviewerResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -67,8 +68,11 @@ public class InterviewersService implements InterviewerUseCase {
     @Override
     public List<InterviewerResponseDto> findAll(String sortType) {
         List<Interviewer> interviewers = interviewerLoadPort.findAll();
-        interviewerSortHelper.sort(interviewers, sortType);
-        return interviewers.stream().map(InterviewerResponseDto::from).toList();
+        if (interviewers != null && !interviewers.isEmpty()) {
+            interviewerSortHelper.sort(interviewers, sortType);
+            return interviewers.stream().map(InterviewerResponseDto::from).toList();
+        }
+        return Collections.emptyList();
     }
 
     @Override

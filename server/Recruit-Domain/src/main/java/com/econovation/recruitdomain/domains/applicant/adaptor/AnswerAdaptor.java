@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -70,7 +71,85 @@ public class AnswerAdaptor {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE);
         query.with(pageable);
 
-        List<MongoAnswer> mongoAnswers = mongoTemplate.find(query, MongoAnswer.class);
-        return mongoAnswers;
+        return mongoTemplate.find(query, MongoAnswer.class);
+    }
+
+    public List<MongoAnswer> findByYearAndSearchKeyword(
+            Integer year, Integer page, String sortType, String searchKeyword) {
+        Query query =
+                new Query()
+                        .addCriteria(Criteria.where("year").is(year))
+                        .skip((page - 1) * 10L)
+                        .limit(PAGE_SIZE);
+
+        setSortType(query, sortType);
+
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
+
+        return mongoTemplate.find(query, MongoAnswer.class);
+    }
+
+    private void addCriteriaIfSearchKeywordExists(String searchKeyword, Query query) {
+        if (searchKeyword != null && !searchKeyword.isEmpty()) {
+            TextCriteria criteria = TextCriteria.forDefaultLanguage().matchingAny(searchKeyword);
+            query.addCriteria(criteria);
+        }
+    }
+
+    private void setSortType(Query query, String sortType) {
+        switch (sortType) {
+            case "name" -> query.with(Sort.by(Direction.ASC, "qna.name"));
+            case "newest" -> query.with(Sort.by(Direction.DESC, "created_date"));
+            case "objective" -> query.with(
+                    Sort.by(
+                            Sort.Order.asc("qna.field"), // 지원 분야: 개발자, 기획자, 디자이너
+                            Sort.Order.desc("qna.field1"), // 세부 분야 1순위: WEB, GAME, APP, AI
+                            Sort.Order.desc("qna.field2") // 세부 분야 2순위: WEB, GAME, APP, AI
+                            ));
+        }
+    }
+
+    public long getTotalCountByYearAndSearchKeyword(Integer year, String searchKeyword) {
+        Query query = new Query().addCriteria(Criteria.where("year").is(year));
+
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
+
+        return mongoTemplate.count(query, MongoAnswer.class);
+    }
+
+    public List<MongoAnswer> findByYearAndSearchKeywordAndApplicantIds(
+            Integer page,
+            Integer year,
+            String sortType,
+            String searchKeyword,
+            List<String> applicantIds) {
+
+        Query query =
+                new Query()
+                        .addCriteria(Criteria.where("year").is(year))
+                        .addCriteria(Criteria.where("id").in(applicantIds))
+                        .skip((page - 1) * 10L)
+                        .limit(PAGE_SIZE);
+
+        setSortType(query, sortType);
+
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
+
+        return mongoTemplate.find(query, MongoAnswer.class);
+    }
+
+    public List<MongoAnswer> findByYearAndSearchKeywordAndApplicantIds(
+            Integer year, String sortType, String searchKeyword, List<String> applicantIds) {
+
+        Query query =
+                new Query()
+                        .addCriteria(Criteria.where("year").is(year))
+                        .addCriteria(Criteria.where("id").in(applicantIds));
+
+        setSortType(query, sortType);
+
+        addCriteriaIfSearchKeywordExists(searchKeyword, query);
+
+        return mongoTemplate.find(query, MongoAnswer.class);
     }
 }

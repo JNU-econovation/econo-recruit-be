@@ -44,4 +44,8 @@ public class RecordsViewResponseDto {
                 .records(recordViewResponseDtos)
                 .build();
     }
+
+    public static RecordsViewResponseDto empty(PageInfo pageInfo) {
+        return RecordsViewResponseDto.builder().pageInfo(pageInfo).records(List.of()).build();
+    }
 }

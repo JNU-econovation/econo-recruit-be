@@ -1,6 +1,9 @@
 package com.econovation.recruit.api.record.service;
 
+import static com.econovation.recruit.utils.sort.SortHelper.paginateList;
+
 import com.econovation.recruit.api.applicant.usecase.ApplicantQueryUseCase;
+import com.econovation.recruit.api.record.dto.FilteredRecordsWithScoresDto;
 import com.econovation.recruit.api.record.dto.RecordsViewResponseDto;
 import com.econovation.recruit.api.record.usecase.RecordUseCase;
 import com.econovation.recruit.utils.sort.SortHelper;
@@ -16,7 +19,12 @@ import com.econovation.recruitdomain.domains.score.domain.Score;
 import com.econovation.recruitdomain.out.RecordLoadPort;
 import com.econovation.recruitdomain.out.RecordRecordPort;
 import com.econovation.recruitdomain.out.ScoreLoadPort;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class RecordService implements RecordUseCase {
+
     private final RecordRecordPort recordRecordPort;
     private final RecordLoadPort recordLoadPort;
     private final ScoreLoadPort scoreLoadPort;
@@ -61,78 +70,170 @@ public class RecordService implements RecordUseCase {
         PageInfo pageInfo = getPageInfo(page);
 
         List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
-        List<Score> scores = scoreLoadPort.findByApplicantIds(applicantIds);
+
         List<MongoAnswer> applicants =
                 applicantQueryUseCase.execute(applicantIds).stream()
                         .filter(applicant -> year == null || applicant.getYear().equals(year))
                         .toList();
 
         if (result.isEmpty() || applicants.isEmpty()) {
-            return RecordsViewResponseDto.of(
-                    pageInfo,
-                    Collections.emptyList(),
-                    Collections.emptyMap(),
-                    Collections.emptyList());
+            return RecordsViewResponseDto.empty(pageInfo);
         }
 
         Map<String, Integer> yearByAnswerIdMap =
                 applicants.stream()
                         .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
         Map<String, Double> scoreMap =
-                scores.stream()
-                        .filter(
-                                score ->
-                                        year == null
-                                                || yearByAnswerIdMap
-                                                        .get(score.getApplicantId())
-                                                        .equals(year))
-                        .collect(
-                                Collectors.groupingBy(
-                                        Score::getApplicantId,
-                                        Collectors.averagingDouble(Score::getScore)));
+                calculateAverageScoresByApplicant(year, applicantIds, yearByAnswerIdMap);
 
-        result =
-                result.stream()
-                        .filter(
-                                record ->
-                                        year == null
-                                                || Optional.ofNullable(record.getApplicantId())
-                                                        .map(yearByAnswerIdMap::get)
-                                                        .map(y -> y.equals(year))
-                                                        .orElse(false))
-                        .toList();
+        result = filterRecordsByYear(result, year, yearByAnswerIdMap);
 
         applicants =
                 new ArrayList<>(
                         applicants); // Unmodifiable List일 경우 Sort 불가. stream().toList()의 결과는
         // Unmodifiable List
 
+        List<Record> records;
         if (sortType.equals("score")) {
-            List<Record> records = sortRecordsByScoresDesc(result, scoreMap);
-            return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
+            records = sortRecordsByScoresDesc(result, scoreMap);
         } else {
-            List<Record> records = sortRecordsByApplicantsAndSortType(result, applicants, sortType);
-            return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
+            records = sortRecordsByApplicantsAndSortType(result, applicants, sortType);
         }
+
+        return RecordsViewResponseDto.of(pageInfo, records, scoreMap, applicants);
+    }
+
+    @Override
+    public RecordsViewResponseDto execute(
+            Integer page, Integer year, String sortType, String searchKeyword) {
+        List<Record> result = recordLoadPort.findAll();
+        List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
+
+        List<MongoAnswer> applicants;
+        List<Record> records;
+        FilteredRecordsWithScoresDto filteredData;
+
+
+        if (sortType.equals("score")) {
+            applicants = applicantQueryUseCase.execute(year, sortType, searchKeyword, applicantIds);
+            filteredData = filterRecordsAndCalculateScores(result, applicants, year, page);
+            records =
+                    sortRecordsByScoresDesc(filteredData.records(), filteredData.scoreMap(), page);
+        } else {
+            applicants =
+                    applicantQueryUseCase.execute(
+                            page, year, sortType, searchKeyword, applicantIds);
+            filteredData = filterRecordsAndCalculateScores(result, applicants, year, page);
+            records = sortRecordsByApplicantsAndSortType(filteredData.records(), applicants);
+        }
+
+        if (result.isEmpty() || applicants.isEmpty()) {
+            return RecordsViewResponseDto.empty(new PageInfo(0, page));
+        }
+
+        PageInfo pageInfo = applicantQueryUseCase.getPageInfo(year, page, searchKeyword);
+        return RecordsViewResponseDto.of(pageInfo, records, filteredData.scoreMap(), applicants);
+    }
+
+    private FilteredRecordsWithScoresDto filterRecordsAndCalculateScores(
+            List<Record> records, List<MongoAnswer> applicants, Integer year, Integer page) {
+        Map<String, Integer> yearByAnswerIdMap =
+                applicants.stream()
+                        .collect(Collectors.toMap(MongoAnswer::getId, MongoAnswer::getYear));
+
+        List<Record> filteredRecords = filterRecordsByYear(records, year, yearByAnswerIdMap);
+
+        List<String> filteredApplicantIds =
+                applicants.stream().map(MongoAnswer::getId).toList(); // 검색 결과에 따라 applicantIds 재할당
+
+        Map<String, Double> scoreMap =
+                calculateAverageScoresByApplicant(year, filteredApplicantIds, yearByAnswerIdMap);
+
+        return new FilteredRecordsWithScoresDto(filteredRecords, scoreMap);
+    }
+
+    private List<Record> filterRecordsByYear(
+            List<Record> records, Integer year, Map<String, Integer> yearByAnswerIdMap) {
+        return records.stream()
+                .filter(
+                        record ->
+                                year == null
+                                        || Optional.ofNullable(record.getApplicantId())
+                                                .map(yearByAnswerIdMap::get)
+                                                .map(y -> y.equals(year))
+                                                .orElse(false))
+                .toList();
+    }
+
+    private Map<String, Double> calculateAverageScoresByApplicant(
+            Integer year, List<String> applicantIds, Map<String, Integer> yearByAnswerIdMap) {
+        List<Score> scores = scoreLoadPort.findByApplicantIds(applicantIds);
+        return scores.stream()
+                .filter(
+                        score ->
+                                year == null
+                                        || yearByAnswerIdMap
+                                                .get(score.getApplicantId())
+                                                .equals(year))
+                .collect(
+                        Collectors.groupingBy(
+                                Score::getApplicantId,
+                                Collectors.averagingDouble(Score::getScore)));
     }
 
     private List<Record> sortRecordsByScoresDesc(
             List<Record> records, Map<String, Double> scoreMap) {
         // score 내림차순 정렬
-        return records.stream()
-                .sorted(
-                        Comparator.comparing(
-                                record -> {
-                                    Double score = scoreMap.get(record.getApplicantId());
-                                    return score == null ? 0 : score;
-                                }))
-                .toList();
+        List<Record> sortedRecords =
+                records.stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        record -> {
+                                            Double score = scoreMap.get(record.getApplicantId());
+                                            return score == null ? 0 : score;
+                                        }))
+                        .toList();
+        return sortedRecords;
+    }
+
+    private List<Record> sortRecordsByScoresDesc(
+            List<Record> records, Map<String, Double> scoreMap, Integer page) {
+        // score 내림차순 정렬
+        List<Record> sortedRecords =
+                records.stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        record ->
+                                                scoreMap.getOrDefault(record.getApplicantId(), 0.0),
+                                        Comparator.reverseOrder()))
+                        .toList();
+        // 페이징 함수 호출
+        return paginateList(sortedRecords, page);
     }
 
     private List<Record> sortRecordsByApplicantsAndSortType(
             List<Record> records, List<MongoAnswer> applicants, String sortType) {
         // Newest, Name, Object 정렬
-        sortHelper.sort(applicants, sortType);
+        if (!applicants.isEmpty()) {
+            sortHelper.sort(applicants, sortType);
+        }
+        Map<String, Integer> applicantIndexMap = new HashMap<>();
+        for (int i = 0; i < applicants.size(); i++) {
+            applicantIndexMap.put(applicants.get(i).getId(), i);
+        }
+
+        return records.stream()
+                .sorted(
+                        Comparator.comparing(
+                                record ->
+                                        applicantIndexMap.getOrDefault(
+                                                record.getApplicantId(), Integer.MAX_VALUE)))
+                .toList();
+    }
+
+    private List<Record> sortRecordsByApplicantsAndSortType(
+            List<Record> records, List<MongoAnswer> applicants) {
+
         Map<String, Integer> applicantIndexMap = new HashMap<>();
         for (int i = 0; i < applicants.size(); i++) {
             applicantIndexMap.put(applicants.get(i).getId(), i);
@@ -161,12 +262,7 @@ public class RecordService implements RecordUseCase {
     @Override
     @Transactional
     public void updateRecordUrl(String applicantId, String url) {
-        recordLoadPort
-                .findByApplicantId(applicantId)
-                .ifPresent(
-                        record -> {
-                            record.updateUrl(url);
-                        });
+        recordLoadPort.findByApplicantId(applicantId).ifPresent(record -> record.updateUrl(url));
     }
 
     @Override
@@ -174,10 +270,7 @@ public class RecordService implements RecordUseCase {
     public void updateRecordContents(String applicantId, String contents) {
         recordLoadPort
                 .findByApplicantId(applicantId)
-                .ifPresent(
-                        record -> {
-                            record.updateRecord(contents);
-                        });
+                .ifPresent(record -> record.updateRecord(contents));
     }
 
     @Override

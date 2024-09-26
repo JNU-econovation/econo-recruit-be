@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "[6.0] Record API", description = "면접 기록 Record API")
 @RequiredArgsConstructor
 public class RecordController {
+
     private final RecordUseCase recordUseCase;
 
     @Operation(summary = "지원자의 면접기록을 생성합니다")
@@ -56,9 +58,11 @@ public class RecordController {
     @GetMapping("/page/{page}/records")
     public ResponseEntity<RecordsViewResponseDto> findAll(
             @PathVariable(name = "page") Integer page,
-            @ParameterObject String sortType,
-            @ParameterObject Integer year) {
-        return new ResponseEntity<>(recordUseCase.execute(page, year, sortType), HttpStatus.OK);
+            @ParameterObject String order,
+            @ParameterObject Integer year,
+            @RequestParam(required = false) String searchKeyword) {
+        return new ResponseEntity<>(
+                recordUseCase.execute(page, year, order, searchKeyword), HttpStatus.OK);
     }
 
     @Operation(summary = "지원자의 면접기록을 전부 조회합니다")

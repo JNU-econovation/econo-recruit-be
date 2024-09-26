@@ -13,11 +13,10 @@ public class ApplicantStateModifyEvent extends DomainEvent {
     private final String applicantId;
     private final ApplicantStateEvents event;
 
-    public static ApplicantStateModifyEvent of(String applicantId, String eventName){
+    public static ApplicantStateModifyEvent of(String applicantId, String eventName) {
         return ApplicantStateModifyEvent.builder()
                 .applicantId(applicantId)
                 .event(ApplicantStateEvents.find(eventName))
                 .build();
     }
-
 }
