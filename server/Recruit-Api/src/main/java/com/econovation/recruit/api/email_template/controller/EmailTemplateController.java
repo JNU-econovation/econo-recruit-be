@@ -1,6 +1,6 @@
 package com.econovation.recruit.api.email_template.controller;
 
-import com.econovation.recruit.api.email_template.docs.ReadEmailTemplateExceptionDocs;
+//import com.econovation.recruit.api.email_template.docs.ReadEmailTemplateExceptionDocs;
 import com.econovation.recruit.api.email_template.dto.EmailTemplateRequestDto;
 import com.econovation.recruit.api.email_template.usecase.EmailTemplateLoadUseCase;
 import com.econovation.recruit.api.email_template.usecase.EmailTemplateRegisterUseCase;
@@ -29,7 +29,7 @@ public class EmailTemplateController {
     private final EmailTemplateLoadUseCase emailTemplateLoadUseCase;
 
     @Operation(summary = "이메일 템플릿 조회", description = "이메일 템플릿을 id로 조회합니다.")
-    @ApiErrorExceptionsExample(ReadEmailTemplateExceptionDocs.class)
+//    @ApiErrorExceptionsExample(ReadEmailTemplateExceptionDocs.class)
     @GetMapping("/email-templates/{emailTemplateId}")
     public ResponseEntity<EmailTemplate> getApplicantById(Long applicantId) {
         return new ResponseEntity<>(emailTemplateLoadUseCase.findById(applicantId), HttpStatus.OK);
