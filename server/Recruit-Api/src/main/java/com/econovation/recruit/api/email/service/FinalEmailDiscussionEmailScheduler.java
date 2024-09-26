@@ -41,7 +41,7 @@ public class FinalEmailDiscussionEmailScheduler {
     @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 30000))
     @SneakyThrows
     @Async
-    @Scheduled(cron = "${econovation.recruit.period.finalDiscussion}", zone = "Asia/Seoul")
+    @Scheduled(cron = "${econovation.recruit.period.finalDiscussionCron}", zone = "Asia/Seoul")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handle() {
         int startIndex = 0;
@@ -199,7 +199,7 @@ public class FinalEmailDiscussionEmailScheduler {
     /** 면접 합격자 이메일 템플릿 */
     private String generateFinalPassedTemplate(MongoAnswer applicant) {
         String template =
-                "<img alt='econo-3d-logo' width='114' height='143' style='color:transparent; margin:auto;' src='https://recruit.econovation.kr/images/econo-3d-logo.png'><br><br>안녕하세요, NAME님.<br><br>에코노베이션에 관심을 가지고 지원해 주셔서 감사합니다.<br><br>에코노베이션 28기 신입 모집에 최종 합격하신 것을 축하드립니다!<br><br>사전에 안내해 드린 대로 OT가 진행될 예정입니다.<br><br>OT는 대면으로 진행되며, 일정에 대해 잘 숙지하시고 반드시 참여해주시기를 바랍니다.<br><br>에코노베이션에 대한 소개를 담은 포트폴리오를 아래에 첨부하였으니 OT 시작 전 확인해주시기를 바랍니다.<br><br>에코노베이션은 다양한 프로젝트와 스터디에 GitHub을 사용하고 있으니 원활한 동아리 활동을 위해 OT 전 <b>꼭 Github에 가입해주시길 바랍니다.</b><br><br>메일 확인 후 참석 여부에 대한 회신 부탁드립니다. 예) 확인, 참석합니다.<br><br>—OT—<br><br><b>일시: 10월 2일 수요일 19:00 ~ 21:00<br><br>장소 : 전남대학교 정보전산원 1층 109호</b><br><br>";
+                "<img alt='econo-3d-logo' width='114' height='143' style='color:transparent; margin:auto;' src='https://recruit.econovation.kr/images/econo-3d-logo.png'><br><br>안녕하세요, NAME님.<br><br>에코노베이션에 관심을 가지고 지원해 주셔서 감사합니다.<br><br>에코노베이션 28기 신입 모집에 최종 합격하신 것을 축하드립니다!<br><br>사전에 안내해 드린 대로 OT가 진행될 예정입니다.<br><br>OT는 대면으로 진행되며, 일정에 대해 잘 숙지하시고 반드시 참여해주시기를 바랍니다.<br><br>에코노베이션에 대한 소개를 담은 포트폴리오를 아래에 첨부하였으니 OT 시작 전 확인해주시기를 바랍니다.<br><br>에코노베이션은 다양한 프로젝트와 스터디에 GitHub을 사용하고 있으니 원활한 동아리 활동을 위해 OT 전 <b>꼭 Github에 가입해주시길 바랍니다.</b><br><br>메일 확인 후 참석 여부에 대한 회신 부탁드립니다. 예) 확인, 참석합니다.<br><br>--OT--<br><br><b>일시: 10월 2일 수요일 19:00 ~ 21:00<br><br>장소 : 전남대학교 정보전산원 1층 109호</b><br><br>";
         return template.replace("NAME", applicant.getQna().get("name").toString());
     }
 
