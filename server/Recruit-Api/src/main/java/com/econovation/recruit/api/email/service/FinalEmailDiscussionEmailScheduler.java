@@ -1,7 +1,5 @@
 package com.econovation.recruit.api.email.service;
 
-import static com.econovation.recruitdomain.domains.applicant.domain.state.PassStates.FINAL_FAILED;
-import static com.econovation.recruitdomain.domains.applicant.domain.state.PassStates.FINAL_PASSED;
 
 import com.econovation.recruit.api.applicant.usecase.ApplicantQueryUseCase;
 import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
@@ -30,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class ApplicantPassEmailScheduler {
+public class FinalEmailDiscussionEmailScheduler {
     private final CommonsEmailSender emailSender;
     private final ApplicantQueryUseCase applicantQueryUseCase;
     private final Integer MAX_EMAIL_SEND_RETRY = 10;

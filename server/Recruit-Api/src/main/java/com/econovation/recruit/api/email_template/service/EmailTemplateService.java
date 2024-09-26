@@ -1,6 +1,5 @@
 package com.econovation.recruit.api.email_template.service;
 
-import com.econovation.recruit.api.email.service.EmailSendScheduler;
 import com.econovation.recruit.api.email_template.dto.EmailTemplateRequestDto;
 import com.econovation.recruit.api.email_template.usecase.EmailTemplateLoadUseCase;
 import com.econovation.recruit.api.email_template.usecase.EmailTemplateRegisterUseCase;
@@ -20,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class EmailTemplateService
         implements EmailTemplateRegisterUseCase, EmailTemplateLoadUseCase {
     private final EmailTemplateAdaptor emailTemplateAdaptor;
-    private final EmailSendScheduler emailSendScheduler;
+    //    private final EmailSendScheduler emailSendScheduler;
 
     @Override
     public EmailTemplate findById(Long emailTemplateId) {
@@ -36,7 +35,7 @@ public class EmailTemplateService
         validateEmailTemplate(emailTemplate);
         emailTemplateAdaptor.save(emailTemplate);
         // 이메일 발송 예약
-        emailSendScheduler.scheduleEmailSend(emailTemplate);
+        //        emailSendScheduler.scheduleEmailSend(emailTemplate);
         return emailTemplate;
     }
 

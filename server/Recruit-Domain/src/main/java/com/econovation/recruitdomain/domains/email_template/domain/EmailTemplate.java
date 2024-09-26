@@ -1,8 +1,5 @@
 package com.econovation.recruitdomain.domains.email_template.domain;
 
-import static com.econovation.recruitcommon.consts.RecruitStatic.PREFIX_EMATIL_TEMPLATE;
-import static com.econovation.recruitcommon.consts.RecruitStatic.SUFFIX_EMATIL_TEMPLATE;
-
 import com.econovation.recruitdomain.domains.BaseTimeEntity;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
@@ -40,6 +37,7 @@ public class EmailTemplate extends BaseTimeEntity {
     private LocalDateTime scheduledTime;
 
     public void convertMessageToHtml() {
-        this.message = PREFIX_EMATIL_TEMPLATE.concat(this.message).concat(SUFFIX_EMATIL_TEMPLATE);
+        //        this.message =
+        // PREFIX_EMATIL_TEMPLATE.concat(this.message).concat(SUFFIX_EMATIL_TEMPLATE);
     }
 }
