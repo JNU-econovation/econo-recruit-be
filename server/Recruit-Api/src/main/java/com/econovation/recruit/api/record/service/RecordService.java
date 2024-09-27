@@ -70,6 +70,7 @@ public class RecordService implements RecordUseCase {
         PageInfo pageInfo = getPageInfo(page);
 
         List<String> applicantIds = result.stream().map(Record::getApplicantId).toList();
+
         List<MongoAnswer> applicants =
                 applicantQueryUseCase.execute(applicantIds).stream()
                         .filter(applicant -> year == null || applicant.getYear().equals(year))
@@ -111,6 +112,7 @@ public class RecordService implements RecordUseCase {
         List<MongoAnswer> applicants;
         List<Record> records;
         FilteredRecordsWithScoresDto filteredData;
+
 
         if (sortType.equals("score")) {
             applicants = applicantQueryUseCase.execute(year, sortType, searchKeyword, applicantIds);

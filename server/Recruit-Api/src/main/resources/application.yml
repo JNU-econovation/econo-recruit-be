@@ -66,14 +66,15 @@ mail:
   destination:
     url: ${MAIL_DESTINATION_URL:http://localhost:8080}
 econovation:
-  year: ${ECONOVATION_YEAR:27}
+  year: ${ECONOVATION_YEAR:28}
   recruit:
     period:
       start: ${RECRUIT_PERIOD_START:2024-03-04T00:00:00}
       end: ${RECRUIT_PERIOD_END:2024-03-15T23:59:59}
       passedDate: ${RECRUIT_PERIOD_PASSED_DATE:2024-03-18T09:00:00}
       firstDiscussion: ${RECRUIT_PERIOD_FIRST_DISCUSSION:2024-09-20T00:00:00}
-      finalDiscussion: ${RECRUIT_PERIOD_FINAL_DISCUSSION:2024-09-30T00:00:00}
+      finalDiscussion: ${RECRUIT_PERIOD_FINAL_DISCUSSION:2024-09-30T09:00:00}
+      finalDiscussionCron: ${RECRUIT_PERIOD_FINAL_DISCUSSION_CRON:0 0 9 30 9 ?}
     valid:
       enabled: ${RECRUIT_PERIOD_ENABLED:false}
     admin:

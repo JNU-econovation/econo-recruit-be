@@ -79,6 +79,11 @@ public class ApplicantService implements ApplicantQueryUseCase {
         return new PageInfo(totalCount, page);
     }
 
+    @Override
+    public List<MongoAnswer> getApplicantsByYear(Integer year) {
+        return answerAdaptor.findByYear(year);
+    }
+
     @Transactional(readOnly = true)
     public List<MongoAnswer> execute(
             Integer page,

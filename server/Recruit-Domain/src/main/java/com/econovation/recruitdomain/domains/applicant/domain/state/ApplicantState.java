@@ -19,4 +19,9 @@ public class ApplicantState {
     public String getPassState() {
         return this.passState.toString();
     }
+
+    public PassStates getPassStateToEnum() {
+        return this.passState;
+    }
+
 }
