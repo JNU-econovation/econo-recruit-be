@@ -89,6 +89,10 @@ spring:
   config:
     activate:
       on-profile: local
+econovation:
+  file:
+    path:
+      portfolio: ${ECONOVATION_PORTFOLIO_PATH:./portfolio.pdf}
 #logging:
 #  level:
 #    root: info
@@ -114,6 +118,11 @@ spring:
 logging:
   level:
     ROOT: WARN
+
+econovation:
+  file:
+    path:
+      portfolio: ${ECONOVATION_PORTFOLIO_PATH:/app/resources/static/mail/portfolio.pdf}
 ---
 spring:
   config:
