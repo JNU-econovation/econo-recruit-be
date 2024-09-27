@@ -72,7 +72,7 @@ public class FinalEmailDiscussionEmailScheduler {
     // 포트폴리오 파일을 가져오는 메서드
     private File getPortfolioFile() {
         // applicant에서 포트폴리오 파일 경로나 ID 등을 이용해 파일을 가져오는 로직
-        String filePath = "./portfolio.pdf";
+        String filePath = "./server/Recruit-Api/src/main/resources/static/mail/portfolio.pdf";
         return new File(filePath);
     }
 
@@ -171,7 +171,7 @@ public class FinalEmailDiscussionEmailScheduler {
             Map<MongoAnswer, Integer> retryCounts,
             Queue<MongoAnswer> failQueue) {
         boolean result;
-        if (!attachment.exists()) {
+        if (attachment.exists()) {
             result =
                     emailSender.sendEmailWithAttachment(
                             applicant.getQna().get("email").toString(),
