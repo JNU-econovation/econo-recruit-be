@@ -33,6 +33,9 @@ public class FinalEmailDiscussionEmailScheduler {
 
     private File attachment;
 
+    @Value("${econovation.file.path.portfolio}")
+    private String filePath;
+
     @Retryable(value = Exception.class, maxAttempts = 3, backoff = @Backoff(delay = 30000))
     @SneakyThrows
     @Async
@@ -72,7 +75,6 @@ public class FinalEmailDiscussionEmailScheduler {
     // 포트폴리오 파일을 가져오는 메서드
     private File getPortfolioFile() {
         // applicant에서 포트폴리오 파일 경로나 ID 등을 이용해 파일을 가져오는 로직
-        String filePath = "./server/Recruit-Api/src/main/resources/static/mail/portfolio.pdf";
         return new File(filePath);
     }
 
