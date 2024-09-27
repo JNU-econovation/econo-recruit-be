@@ -171,7 +171,7 @@ public class FinalEmailDiscussionEmailScheduler {
             Map<MongoAnswer, Integer> retryCounts,
             Queue<MongoAnswer> failQueue) {
         boolean result;
-        if (attachment != null) {
+        if (!attachment.exists()) {
             result =
                     emailSender.sendEmailWithAttachment(
                             applicant.getQna().get("email").toString(),
