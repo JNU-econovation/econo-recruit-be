@@ -6,12 +6,7 @@ import com.econovation.recruitdomain.domains.applicant.domain.MongoAnswer;
 import com.econovation.recruitdomain.domains.applicant.domain.state.PassStates;
 import com.econovation.recruitinfrastructure.apache.CommonsEmailSender;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -46,11 +41,13 @@ public class FinalEmailDiscussionEmailScheduler {
     public void handle() {
         int startIndex = 0;
         int batchSize = 14;
-        List<MongoAnswer> applicants;
+        List<MongoAnswer> applicants = applicantQueryUseCase.getApplicantsByYear(year);
         Queue<MongoAnswer> failQueue = new LinkedList<>();
         Map<MongoAnswer, Integer> retryCounts = new HashMap<>(); // Map to track retry counts
+
+        int iteration = 0;
+        int limit = 1;
         do {
-            applicants = applicantQueryUseCase.getApplicantsByYear(year);
             List<MongoAnswer> batch = new ArrayList<>(batchSize);
             for (MongoAnswer applicant : applicants) {
                 batch.add(applicant);
@@ -67,7 +64,8 @@ public class FinalEmailDiscussionEmailScheduler {
             }
             if (startIndex >= 10) break;
             startIndex++;
-        } while (applicants.iterator().hasNext());
+            iteration++;
+        } while (iteration<limit);
         failOver(failQueue, retryCounts);
     }
 
