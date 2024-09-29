@@ -17,8 +17,8 @@ commons:
   email:
     host: ${COMMONS_EMAIL_HOST:smtp.naver.com}
     port: 587
-    sender-name: ${COMMONS_EMAIL_SENDER_USERNAME:}
-    sender-address: ${COMMONS_EMAIL_SENDER_ADDRESS:}
+    sender-name: ${COMMONS_EMAIL_SENDER_USERNAME:econovation_recruit}
+    sender-address: ${COMMONS_EMAIL_SENDER_ADDRESS:whdals011203@naver.com}
     password: ${COMMONS_EMAIL_PASSWORD:}
 spring:
   redis:

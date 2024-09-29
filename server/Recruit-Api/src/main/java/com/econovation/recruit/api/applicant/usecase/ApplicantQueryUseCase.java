@@ -42,4 +42,6 @@ public interface ApplicantQueryUseCase {
     AnswersResponseDto search(Integer page, String searchKeyword);
 
     List<GetApplicantsStatusResponse> getApplicantsStatus(Integer year, String sortType);
+
+    List<MongoAnswer> getApplicantsByYear(Integer year);
 }
